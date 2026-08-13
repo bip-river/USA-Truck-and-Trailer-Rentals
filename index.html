@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Haul Index — US truck &amp; trailer rental reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@300;400;600;700;800&family=Overpass+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* category hues derived from MUTCD sign colors: guide green, services blue,
+     recreational brown, warning amber, regulatory-adjacent plum, rust, teal.
+     All held at low chroma and similar value so the grid still reads utilitarian. */
+  --c-box:#17563C;      --c-box-t:#E7EFEA;
+  --c-van:#1B4E8C;      --c-van-t:#E6EDF6;
+  --c-pickup:#6B4423;   --c-pickup-t:#F2ECE5;
+  --c-cargo:#5B2D6B;    --c-cargo-t:#EFE8F2;
+  --c-utility:#8A5209;  --c-utility-t:#FAF0DE;
+  --c-equip:#8C3A1F;    --c-equip-t:#F8E9E4;
+  --c-towing:#1F5A5E;   --c-towing-t:#E5EFEF;
+  --paper:#F2F4F1;
+  --card:#FFFFFF;
+  --ink:#14171A;
+  --ink2:#5C6362;
+  --ink3:#8A918F;
+  --rule:#D2D6D1;
+  --rule-soft:#E6E9E5;
+  --green:#17563C;
+  --green-tint:#E7EFEA;
+  --amber:#8A5209;
+  --amber-tint:#FAF0DE;
+  --red:#8C2F1F;
+  --sp:4px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Overpass',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.45;
+  padding-bottom:96px;
+}
+.mono{font-family:'Overpass Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- masthead ---------- */
+header.mast{
+  background:var(--ink);
+  color:#F5F6F4;
+  padding:14px 16px 12px;
+  border-bottom:3px solid var(--green);
+}
+.mast h1{
+  font-size:19px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+}
+.mast h1 span{
+  font-family:'Overpass Mono',monospace;font-size:10px;font-weight:400;
+  letter-spacing:.18em;color:#9AA5A0;
+}
+.mast p{font-size:12px;color:#A8B2AE;margin-top:3px;max-width:60ch}
+
+/* ---------- tabs ---------- */
+nav.tabs{
+  display:flex;background:var(--ink);border-bottom:1px solid var(--rule);
+  position:sticky;top:0;z-index:40;
+}
+nav.tabs button{
+  flex:1;background:none;border:0;border-bottom:3px solid transparent;
+  color:#98A29E;font-family:'Overpass',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;padding:11px 4px;cursor:pointer;
+}
+nav.tabs button[aria-selected="true"]{color:#fff;border-bottom-color:var(--green);background:#1D2225}
+nav.tabs button:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+
+/* ---------- controls ---------- */
+.controls{
+  background:var(--card);border-bottom:1px solid var(--rule);
+  padding:10px 12px;position:sticky;top:41px;z-index:30;
+}
+.searchrow{display:flex;gap:6px;align-items:stretch}
+.searchrow input[type=search]{
+  flex:1;min-width:0;font-family:'Overpass',sans-serif;font-size:16px;
+  padding:9px 11px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);
+}
+.searchrow input[type=search]:focus{outline:2px solid var(--green);outline-offset:-1px;border-color:var(--green)}
+.iconbtn{
+  border:1px solid var(--rule);background:#fff;border-radius:2px;padding:0 12px;cursor:pointer;
+  font-family:'Overpass',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink2);white-space:nowrap;
+}
+.iconbtn[aria-pressed="true"],.iconbtn[aria-expanded="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.iconbtn.star{padding:0 11px;font-size:15px;letter-spacing:0}
+.badge{
+  display:inline-block;margin-left:5px;background:var(--ink);color:#fff;border-radius:8px;
+  padding:1px 5px;font-size:9px;line-height:1.5;vertical-align:1px;
+}
+.iconbtn[aria-expanded="true"] .badge{background:#fff;color:var(--green)}
+.resultbar{
+  padding:9px 12px 0;font-family:'Overpass Mono',monospace;font-size:10.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);
+}
+#panelFilters{margin-top:8px}
+.filterwrap{margin-top:0}
+
+.fgroup{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.fgroup + .fgroup{margin-top:2px}
+.flabel{
+  font-family:'Overpass Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink3);padding:2px 0 3px;
+}
+.chip{
+  flex:0 0 auto;border:1px solid var(--rule);background:#fff;border-radius:2px;
+  padding:5px 10px;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;
+  font-family:'Overpass',sans-serif;white-space:nowrap;
+}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip[data-f="cat"]{border-left:3px solid var(--cat,var(--rule))}
+.chip[data-f="cat"][aria-pressed="true"]{background:var(--cat,var(--ink));border-color:var(--cat,var(--ink))}
+.chip:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+
+.metarow{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  margin-top:6px;font-family:'Overpass Mono',monospace;font-size:10.5px;
+  letter-spacing:.06em;color:var(--ink3);text-transform:uppercase;
+}
+.metarow select{
+  font-family:'Overpass Mono',monospace;font-size:11px;border:1px solid var(--rule);
+  background:#fff;border-radius:2px;padding:4px 6px;color:var(--ink2);
+}
+.linkbtn{background:none;border:0;color:var(--green);font-family:'Overpass Mono',monospace;
+  font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:underline}
+
+/* ---------- panels ---------- */
+main{padding:0}
+.panel[hidden]{display:none}
+
+/* ---------- card view (mobile default) ---------- */
+.cards{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.rec{background:var(--card);border:1px solid var(--rule);border-radius:2px;overflow:hidden;
+  border-left:3px solid var(--cat,var(--rule))}
+.rec.fav{box-shadow:inset 3px 0 0 rgba(255,255,255,.85), inset 6px 0 0 var(--cat,var(--green))}
+.rec.fav .rec-head{background:linear-gradient(90deg,var(--cat-t,#fff) 0%,#fff 42%)}
+.rec-head{display:flex;gap:10px;padding:10px 11px 9px;cursor:pointer;align-items:flex-start}
+.rec-head:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+.rec-id{
+  font-family:'Overpass Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.1em;
+  color:#fff;background:var(--cat,var(--ink));padding:3px 5px;border-radius:2px;flex:0 0 auto;margin-top:2px;
+}
+.rec-title{flex:1;min-width:0}
+.rec-vendor{
+  font-family:'Overpass Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--cat,var(--green));
+}
+.rec-name{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.2;margin-top:1px}
+.rec-sub{font-size:11.5px;color:var(--ink2);margin-top:2px}
+.rec-chev{color:var(--ink3);font-size:13px;flex:0 0 auto;margin-top:4px}
+
+/* size bar */
+.sizebar{height:3px;background:var(--rule-soft);position:relative}
+.sizebar i{display:block;height:100%;background:var(--cat,var(--green))}
+
+/* spec plate — signature element */
+.plate{
+  margin:9px 11px 0;border:1.5px solid var(--ink);background:#fff;
+  box-shadow:0 0 0 1px #fff inset, 0 0 0 2.5px var(--ink) inset;
+  padding:7px 8px 6px;
+}
+.plate-cap{
+  font-family:'Overpass Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--ink2);text-align:center;
+  border-bottom:1px solid var(--rule);padding-bottom:4px;margin-bottom:6px;
+}
+.plate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.plate-cell{text-align:center}
+.plate-k{
+  font-family:'Overpass Mono',monospace;font-size:7.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);display:block;
+}
+.plate-v{font-family:'Overpass Mono',monospace;font-size:14px;font-weight:700;line-height:1.15;display:block}
+.plate-u{font-family:'Overpass Mono',monospace;font-size:7.5px;color:var(--ink3);display:block}
+
+.rec-quick{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:0 10px;
+  padding:9px 11px 10px;font-size:12px;
+}
+.qk{display:flex;justify-content:space-between;gap:6px;padding:3px 0;border-bottom:1px dotted var(--rule-soft)}
+.qk b{font-family:'Overpass Mono',monospace;font-weight:600;font-size:11.5px;text-align:right}
+.qk span{color:var(--ink2);font-size:11px}
+
+.rec-body{border-top:1px solid var(--rule);padding:11px;background:#FCFDFC}
+.sec{margin-bottom:11px}
+.sec:last-child{margin-bottom:0}
+.rec-body .sec h4{border-bottom-color:var(--cat-t,var(--rule))}
+.sec h4{
+  font-family:'Overpass Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--rule);
+  padding-bottom:3px;margin-bottom:6px;
+}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px}
+.dl dt{color:var(--ink2);font-size:11.5px}
+.dl dd{font-family:'Overpass Mono',monospace;font-size:12px;text-align:right}
+.prose{font-size:13px;color:#242A28;line-height:1.5}
+.taglist{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.tag{
+  font-family:'Overpass Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.06em;
+  background:var(--cat-t,var(--green-tint));color:var(--cat,var(--green));padding:3px 6px;border-radius:2px;
+}
+.warn{background:var(--amber-tint);border-left:3px solid var(--amber);padding:7px 9px;font-size:12.5px;color:#3A2A10}
+.warn ul{margin:0;padding-left:15px}
+.warn li + li{margin-top:4px}
+.rate{background:#fff;border:1px solid var(--rule);padding:8px 9px;font-size:12.5px}
+.rate div + div{margin-top:6px;padding-top:6px;border-top:1px dotted var(--rule)}
+.rate em{
+  font-family:'Overpass Mono',monospace;font-style:normal;font-size:9px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--cat,var(--green));display:block;margin-bottom:2px;
+}
+.noteinput{
+  width:100%;font-family:'Overpass',sans-serif;font-size:14px;padding:7px 8px;
+  border:1px solid var(--rule);border-radius:2px;resize:vertical;min-height:52px;background:#fff;
+}
+.rec-actions{display:flex;gap:6px;padding:0 11px 11px}
+.act{
+  flex:1;border:1px solid var(--rule);background:#fff;padding:7px 4px;border-radius:2px;cursor:pointer;
+  font-family:'Overpass Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink2);
+}
+.act[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+
+.pr{font-family:'Overpass Mono',monospace;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.pr b{color:var(--green)}
+.pr s{color:#C8CCC7;text-decoration:none}
+.pr i{font-style:normal;color:var(--ink3);font-size:10px;letter-spacing:.08em}
+.conf{
+  font-family:'Overpass Mono',monospace;font-size:8.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 5px;border-radius:2px;
+}
+.conf.high{background:var(--green-tint);color:var(--green)}
+.conf.med{background:#EDEFEC;color:var(--ink2)}
+.conf.low{background:var(--amber-tint);color:var(--amber)}
+
+/* ---------- table view (desktop) ---------- */
+.tablewrap{display:none}
+table.grid{width:100%;border-collapse:collapse;background:#fff;font-size:12.5px}
+table.grid thead th{
+  position:sticky;top:0;background:var(--ink);color:#E8EBE9;text-align:left;
+  font-family:'Overpass Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;padding:8px 7px;cursor:pointer;white-space:nowrap;border-right:1px solid #2A3033;
+}
+table.grid thead th:hover{background:#232A2D}
+table.grid thead th[aria-sort]{color:#fff}
+table.grid thead th[aria-sort]::after{content:" ▲";font-size:8px}
+table.grid thead th[aria-sort="descending"]::after{content:" ▼"}
+table.grid td{padding:6px 7px;border-bottom:1px solid var(--rule-soft);border-right:1px solid var(--rule-soft);vertical-align:top}
+table.grid tbody tr:hover{background:#F3F6F3}
+table.grid tbody tr.open{background:var(--green-tint)}
+table.grid td.num{font-family:'Overpass Mono',monospace;text-align:right;font-variant-numeric:tabular-nums}
+table.grid td.nm{font-weight:700;cursor:pointer}
+table.grid td.vd{font-family:'Overpass Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--cat,var(--green));text-transform:uppercase;font-weight:700}
+table.grid tbody tr{border-left:3px solid var(--cat,transparent)}
+table.grid tbody tr.open{background:var(--cat-t,var(--green-tint))}
+.detailrow td{background:#FCFDFC;padding:0}
+.detailgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;padding:14px}
+
+/* ---------- compare tray ---------- */
+.tray{
+  position:fixed;left:0;right:0;bottom:0;background:var(--ink);color:#fff;
+  padding:9px 12px;display:flex;align-items:center;gap:8px;z-index:60;
+  border-top:3px solid var(--green);
+}
+.tray[hidden]{display:none}
+.tray-list{flex:1;display:flex;gap:5px;overflow-x:auto;min-width:0}
+.tray-item{
+  flex:0 0 auto;background:#262D30;border:1px solid #394245;border-radius:2px;
+  padding:4px 7px;font-size:11px;display:flex;gap:6px;align-items:center;white-space:nowrap;
+}
+.tray-item button{background:none;border:0;color:#9AA5A0;cursor:pointer;font-size:13px;line-height:1;padding:0}
+.tray-go{
+  background:var(--green);border:0;color:#fff;padding:8px 12px;border-radius:2px;cursor:pointer;
+  font-family:'Overpass Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* ---------- compare overlay ---------- */
+.overlay{position:fixed;inset:0;background:rgba(20,23,26,.55);z-index:70;display:flex;align-items:flex-end}
+.overlay[hidden]{display:none}
+.sheet{background:var(--paper);width:100%;max-height:92vh;overflow:auto;border-top:3px solid var(--green)}
+.sheet-head{
+  position:sticky;top:0;background:var(--ink);color:#fff;padding:11px 13px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.sheet-head h3{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.sheet-head button{background:none;border:1px solid #46504E;color:#fff;border-radius:2px;padding:4px 9px;cursor:pointer;font-size:12px}
+.cmpwrap{overflow-x:auto;padding:0}
+table.cmp{border-collapse:collapse;font-size:12px;min-width:100%;background:#fff}
+table.cmp th,table.cmp td{border:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}
+table.cmp thead th{background:var(--ink);color:#fff;font-size:11px;font-weight:700;position:sticky;top:0}
+table.cmp tbody th{
+  background:#F1F3F0;font-family:'Overpass Mono',monospace;font-size:9.5px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);white-space:nowrap;
+  position:sticky;left:0;
+}
+table.cmp td{font-family:'Overpass Mono',monospace;font-size:11.5px;min-width:150px}
+table.cmp td.best{background:var(--green-tint);font-weight:700}
+
+/* ---------- picker ---------- */
+.picker{padding:14px 12px}
+.pk-intro{font-size:13px;color:var(--ink2);margin-bottom:14px;max-width:62ch}
+.field{margin-bottom:14px;background:#fff;border:1px solid var(--rule);padding:11px}
+.field > label{
+  font-family:'Overpass Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:7px;
+}
+.field select,.field input[type=number]{
+  width:100%;font-family:'Overpass Mono',monospace;font-size:16px;padding:9px 10px;
+  border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);
+}
+.field .hint{font-size:11.5px;color:var(--ink3);margin-top:6px;line-height:1.4}
+.segrow{display:flex;gap:5px;flex-wrap:wrap}
+.seg{
+  flex:1 1 auto;min-width:76px;border:1px solid var(--rule);background:#fff;border-radius:2px;
+  padding:8px 6px;cursor:pointer;font-family:'Overpass',sans-serif;font-size:12px;font-weight:600;color:var(--ink2);
+}
+.seg[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.rangeout{font-family:'Overpass Mono',monospace;font-size:20px;font-weight:700;margin-top:6px}
+input[type=range]{width:100%;accent-color:var(--green);margin-top:8px}
+
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sublabel{
+  font-family:'Overpass Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:4px;
+}
+.disclose{
+  width:100%;margin-top:10px;border:1px solid var(--rule);background:#FBFCFA;border-radius:2px;
+  padding:9px;cursor:pointer;font-family:'Overpass Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--green);text-align:left;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.disclose[aria-expanded="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.disclose::after{content:"+";font-size:15px;line-height:1}
+.disclose[aria-expanded="true"]::after{content:"\2212"}
+.disclose span{font-weight:400;letter-spacing:.06em;opacity:.85;flex:1}
+#invPanel{margin-top:10px;border:1px solid var(--rule);border-radius:2px;background:#FBFCFA}
+.invgrp{border-bottom:1px solid var(--rule-soft)}
+.invgrp:last-of-type{border-bottom:0}
+.invgrp > h5{
+  font-family:'Overpass Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:#fff;background:var(--ink2);padding:5px 9px;
+}
+.invrow{display:flex;align-items:center;gap:8px;padding:5px 9px;border-bottom:1px dotted var(--rule-soft)}
+.invrow:last-child{border-bottom:0}
+.invrow.on{background:var(--green-tint)}
+.invname{flex:1;font-size:13px;line-height:1.25}
+.invname em{font-style:normal;font-family:'Overpass Mono',monospace;font-size:10px;color:var(--ink3);display:block}
+.stepper{display:flex;align-items:center;gap:0;flex:0 0 auto}
+.stepper button{
+  width:30px;height:30px;border:1px solid var(--rule);background:#fff;cursor:pointer;
+  font-family:'Overpass Mono',monospace;font-size:15px;line-height:1;color:var(--ink2);
+}
+.stepper button:first-child{border-radius:2px 0 0 2px}
+.stepper button:last-child{border-radius:0 2px 2px 0}
+.stepper button:active{background:var(--green);color:#fff}
+.stepper .qty{
+  width:32px;text-align:center;font-family:'Overpass Mono',monospace;font-size:13px;font-weight:700;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);height:30px;line-height:30px;background:#fff;
+}
+.invrow.on .qty{background:var(--green);color:#fff;border-color:var(--green)}
+.invtotal{
+  display:flex;justify-content:space-between;align-items:center;padding:10px;
+  background:var(--ink);color:#fff;font-size:12px;position:sticky;bottom:0;
+}
+.invtotal b{font-size:17px}
+.invactions{display:flex;gap:6px;padding:9px}
+.fuelout{
+  margin-top:6px;padding:7px 9px;background:var(--cat-t,var(--green-tint));
+  border-left:3px solid var(--cat,var(--green));font-size:12.5px;
+}
+.fuelout b{font-family:'Overpass Mono',monospace;font-size:15px}
+.results{margin-top:18px}
+.results h3{
+  font-family:'Overpass Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--rule);padding-bottom:5px;margin-bottom:10px;
+}
+.pkres{background:#fff;border:1px solid var(--rule);padding:11px;margin-bottom:9px;display:flex;gap:11px;align-items:flex-start}
+.pkres{border-left:3px solid var(--cat,var(--rule))}
+.pkres.top{box-shadow:inset 0 0 0 1px var(--cat,var(--green))}
+.pkrank{
+  font-family:'Overpass Mono',monospace;font-size:15px;font-weight:700;color:#fff;background:var(--ink);
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:2px;
+}
+.pkres .pkrank{background:var(--cat,var(--ink))}
+.pkbody{flex:1;min-width:0}
+.pkwhy{font-size:12px;color:var(--ink2);margin-top:4px;line-height:1.45}
+.pkfit{
+  font-family:'Overpass Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;margin-top:5px;color:var(--cat,var(--green));
+}
+.pkfit.tight{color:var(--amber)}
+.empty{background:#fff;border:1px dashed var(--rule);padding:22px 14px;text-align:center;color:var(--ink2);font-size:13px}
+
+/* ---------- notes tab ---------- */
+.about{padding:16px 13px;max-width:70ch}
+.about h3{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:16px 0 7px;color:var(--green)}
+.about h3:first-child{margin-top:0}
+.about p{font-size:13.5px;margin-bottom:9px;line-height:1.55}
+.about ul{font-size:13.5px;margin:0 0 9px 17px;line-height:1.55}
+.about li{margin-bottom:5px}
+.about code{font-family:'Overpass Mono',monospace;font-size:12px;background:#EAEDE9;padding:1px 4px;border-radius:2px}
+
+/* ---------- responsive ---------- */
+@media (min-width:720px){
+  body{font-size:14px}
+  .mast{padding:16px 22px 14px}
+  .mast h1{font-size:22px}
+  nav.tabs button{flex:0 0 auto;padding:11px 22px}
+  .controls{padding:11px 22px}
+  .cards{display:none}
+  .tablewrap{display:block;overflow-x:auto}
+  .picker,.about{padding:20px 22px;max-width:920px}
+  #filterToggle{display:none}
+  #panelFilters[hidden]{display:block}
+  .resultbar{padding:9px 22px 0}
+  .rec-quick{grid-template-columns:repeat(3,1fr)}
+  .overlay{align-items:center;justify-content:center;padding:24px}
+  .sheet{max-width:1100px;border:1px solid var(--ink)}
+}
+@media (min-width:1100px){
+  .cmpwrap{overflow-x:visible}
+}
+@media (prefers-reduced-motion:no-preference){
+  .rec-body{animation:drop .16s ease-out}
+  @keyframes drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+}
+@media print{
+  nav.tabs,.controls,.tray,.rec-actions,.overlay{display:none!important}
+  body{background:#fff;padding:0}
+  .rec{break-inside:avoid;border:1px solid #999}
+  .cards{display:flex!important}
+  .tablewrap{display:none!important}
+  .rec-body{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <h1>Haul Index <span>US RENTAL REFERENCE</span></h1>
+  <p>Consumer moving trucks, vans, and towables. Specs, capacities, requirements, and how each company structures its charges.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-ref" aria-controls="panel-ref" aria-selected="true">Reference</button>
+  <button role="tab" id="tab-pick" aria-controls="panel-pick" aria-selected="false">Pick a vehicle</button>
+  <button role="tab" id="tab-about" aria-controls="panel-about" aria-selected="false">Reading it</button>
+</nav>
+
+<main>
+<!-- ================= REFERENCE ================= -->
+<section class="panel" id="panel-ref" role="tabpanel" aria-labelledby="tab-ref">
+  <div class="controls">
+    <div class="searchrow">
+      <input type="search" id="q" placeholder="Search name, use case, feature…" aria-label="Search the index">
+      <button class="iconbtn star" id="favOnly" aria-pressed="false" aria-label="Show saved only" title="Saved only">★</button>
+      <button class="iconbtn" id="filterToggle" aria-expanded="false" aria-controls="panelFilters">Filter<span class="badge" id="fBadge" hidden>0</span></button>
+    </div>
+    <div id="panelFilters" hidden>
+    <div class="filterwrap">
+      <div class="flabel">Company</div>
+      <div class="fgroup" id="fVendor"></div>
+      <div class="flabel">Type</div>
+      <div class="fgroup" id="fCat"></div>
+      <div class="flabel">Cost tier</div>
+      <div class="fgroup" id="fPrice"></div>
+      <div class="flabel">Trip</div>
+      <div class="fgroup" id="fTrip"></div>
+    </div>
+    <div class="metarow">
+      <span id="count">—</span>
+      <span>
+        <label for="sortby" style="margin-right:4px">Sort</label>
+        <select id="sortby">
+          <option value="cuft-desc">Volume ↓</option>
+          <option value="cuft-asc">Volume ↑</option>
+          <option value="maxLoad-desc">Payload ↓</option>
+          <option value="maxLoad-asc">Payload ↑</option>
+          <option value="mpg-desc">MPG ↓</option>
+          <option value="pLocal-asc">Cheapest local</option>
+          <option value="pOneWay-asc">Cheapest one-way</option>
+          <option value="vendor-asc">Company</option>
+          <option value="name-asc">Name</option>
+        </select>
+        <button class="linkbtn" id="reset" style="margin-left:8px">Reset</button>
+      </span>
+    </div>
+    </div>
+  </div>
+  <div class="resultbar" id="resultbar">—</div>
+  <div class="cards" id="cards"></div>
+  <div class="tablewrap"><table class="grid" id="grid"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<!-- ================= PICKER ================= -->
+<section class="panel" id="panel-pick" role="tabpanel" aria-labelledby="tab-pick" hidden>
+  <div class="picker">
+    <p class="pk-intro">Set whatever you know; blank fields stop filtering. Results rank by wasted slack — the smallest thing that still fits wins, because you pay to move air in fuel and maneuverability. On a short local move with a per-mile meter running, a second trip may beat a bigger truck, so treat the ranking as one input rather than a verdict.</p>
+
+    <div class="field">
+      <label>Load size</label>
+      <div class="segrow" id="pkRooms"></div>
+      <div class="hint">A rough preset. For a real number, count what you actually own below.</div>
+      <button class="disclose" id="invToggle" aria-expanded="false" aria-controls="invPanel">
+        Count my inventory <span id="invSum"></span>
+      </button>
+      <div id="invPanel" hidden>
+        <div id="invGroups"></div>
+        <div class="invtotal">
+          <span>Counted volume</span>
+          <b class="mono" id="invTotal">0 cu ft</b>
+        </div>
+        <div class="invactions">
+          <button class="act" id="invApply">Use this as my target</button>
+          <button class="act" id="invClear">Clear all</button>
+        </div>
+        <div class="hint">Figures are packed-volume estimates including the air around awkward shapes. Add roughly 10% if you pack loosely, and remember boxes stack while sofas do not.</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="pkCuft">Volume needed</label>
+      <input type="range" id="pkCuft" min="0" max="1800" step="25" value="0">
+      <div class="rangeout mono" id="pkCuftOut">Any</div>
+      <div class="hint">Rule of thumb: a packed 1BR runs 300–500 cu ft; add ~150 per additional bedroom. Appliances and a garage break the rule.</div>
+    </div>
+
+    <div class="field">
+      <label>Tow vehicle</label>
+      <div class="twocol">
+        <div>
+          <span class="sublabel">Curb weight (lbs)</span>
+          <input type="number" id="pkCurb" min="0" step="250" placeholder="e.g. 4,400">
+        </div>
+        <div>
+          <span class="sublabel">Tow rating (lbs)</span>
+          <input type="number" id="pkTowRate" min="0" step="500" placeholder="e.g. 5,000">
+        </div>
+      </div>
+      <div class="hint"><strong>Curb weight is the binding rule</strong>, not tow rating — U-Haul requires your vehicle&#39;s curb weight to exceed the fully loaded trailer, and that&#39;s stricter than the hitch spec on most vehicles. Find it on the door jamb sticker. Leave either blank to skip that check.</div>
+    </div>
+
+    <div class="field">
+      <label>Trip type</label>
+      <div class="segrow" id="pkTrip"></div>
+    </div>
+
+    <div class="field">
+      <label>Trip fuel</label>
+      <div class="twocol">
+        <div>
+          <span class="sublabel">Distance (mi)</span>
+          <input type="number" id="pkMiles" min="0" step="25" placeholder="e.g. 1,200">
+        </div>
+        <div>
+          <span class="sublabel">Fuel price ($/gal)</span>
+          <input type="number" id="pkGal" min="0" step="0.05" placeholder="e.g. 3.65">
+        </div>
+      </div>
+      <div class="hint">Your numbers, not a vendor&#39;s — so this stays accurate. On a long move at 9&ndash;10 MPG, fuel routinely exceeds the truck itself. Once set, the estimate appears on every record in the Reference tab too.</div>
+    </div>
+
+    <div class="results">
+      <h3>Ranked matches</h3>
+      <div id="pkResults"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section class="panel" id="panel-about" role="tabpanel" aria-labelledby="tab-about" hidden>
+  <div class="about">
+    <h3>Why there are no dollar figures</h3>
+    <p>Local rates are stable and quotable; one-way rates are dynamically priced by lane, season, and fleet imbalance, and can swing several-fold between two quotes a week apart. Printing dollar amounts would make this reference confidently wrong about the number you care most about. So every record describes the <em>rate structure</em> — what you're charged for, and what gets charged again on top — and leaves the amount to the live quote.</p>
+
+    <h3>What the $ tiers mean</h3>
+    <p>Ordinal, not absolute. A 26-foot truck will still cost more than a 4×8 trailer in ten years, so relative rank survives inflation and lane pricing in a way that dollar figures don't. Each record carries two, because the whole point of this reference is that local and one-way pricing behave differently:</p>
+    <ul>
+      <li><strong>Local</strong> — total out the door for one day and roughly 50 miles, including the per-mile charge and fuel.</li>
+      <li><strong>One-way</strong> — total out the door on a lane of roughly 1,000 miles, including fuel and any mileage overage.</li>
+      <li><strong>n/a</strong> — the vendor doesn't offer that trip type. On the one-way column this is the single most decision-relevant field in the index: everything Enterprise, everything Home Depot, every equipment yard, and every U-Haul utility trailer is local-only.</li>
+    </ul>
+    <p>The tiers diverge in ways worth reading for. U-Haul's 6×12 cargo trailer is <span class="pr"><b>$$</b><s>$$</s></span> locally but <span class="pr"><b>$</b><s>$$$</s></span> one-way, because trailers carry no per-mile charge and the advantage compounds with distance. Penske climbs a tier on long lanes despite unlimited miles, because its day rate starts higher. Home Depot is <span class="pr"><b>$</b><s>$$$</s></span> for 75 minutes and would be off the top of the scale for a full day.</p>
+    <p>These are my judgment calls, not quotes. They're anchored to the two scenarios above so you can audit them — if a tier looks wrong against a real quote you pulled, it probably is, and the note field on each record is the place to say so.</p>
+
+    <h3>How to read the spec plate</h3>
+    <ul>
+      <li><code>GVWR</code> — gross vehicle weight rating. The whole rig loaded. Crossing 26,001 lbs is what triggers CDL territory, which is why every consumer truck stops at 25,999.</li>
+      <li><code>MAX LOAD</code> — payload. Cargo only, not counting you, passengers, or fuel. Almost nobody hits it; volume runs out first.</li>
+      <li><code>EMPTY</code> — tare weight. On trailers, this is what your hitch is pulling before anything goes in.</li>
+      <li><code>TONGUE</code> — downward force on the ball. Loading a trailer back-heavy to reduce it causes sway, which is the failure mode that puts trailers in ditches.</li>
+    </ul>
+
+    <h3>Confidence flags</h3>
+    <p>Every record carries one. <span class="conf high">High</span> means specs are stable and widely published. <span class="conf med">Med</span> means the figure is right in shape but may be a model year off. <span class="conf low">Low</span> means verify before relying on it — trailer interior volumes are the worst offenders, since published cubic-foot claims frequently don't reconcile with the published interior dimensions.</p>
+
+    <h3>What this covers</h3>
+    <p>Consumer moving only. No CDL freight, no equipment haulers beyond what a rental yard will hand a walk-up customer, no RV or travel trailers.</p>
+
+    <h3>Where the vendors actually differ</h3>
+    <p>Not on trucks — a 16-foot box is a 16-foot box. They differ on structure, and the structure is what decides the bill:</p>
+    <ul>
+      <li><strong>U-Haul</strong> — the only national one-way trailer network, and the only company that will rent you a towable to pull behind your own car. Meters miles on one-way.</li>
+      <li><strong>Penske</strong> — unlimited miles on one-way. The advantage compounds with distance and is invisible on the quote page. Far fewer locations.</li>
+      <li><strong>Budget</strong> — lowest sticker, oldest fleet, metered one-way miles, and a discount structure so aggressive that paying the headline rate is a mistake. No 22-foot option, so a mid-size load sizes up to a 26.</li>
+      <li><strong>Enterprise</strong> — newest fleet, liftgates nobody else offers, and no one-way. Structurally a local-work vendor. Its heavy pickups are the best rental tow vehicle available anywhere.</li>
+      <li><strong>Home Depot</strong> — priced by a 75-minute clock with unlimited miles. Unbeatable for the trip home from the store, worst per-hour rate here for anything longer.</li>
+      <li><strong>Equipment yards</strong> — heavier gear, weekly rate tiers, and no hand-holding. They will not check whether your truck can pull what they hand you.</li>
+    </ul>
+
+    <h3>The towing rules nobody reads first</h3>
+    <p>These apply to every U-Haul towable and are the reason rentals get refused at the counter. The binding rule is not hitch class — it's the last one:</p>
+    <ul>
+      <li>Hitch ball must be 1-7/8" or 2", rated to at least 2,000 lbs, mounted no higher than 25" off the ground.</li>
+      <li>External mirrors on both sides of the tow vehicle.</li>
+      <li>SUVs and select Jeeps must have a hard top.</li>
+      <li>Trailer and tow vehicle lighting operational at all times, day or night.</li>
+      <li>Maximum recommended towing speed is 55 mph. This is not advisory garnish — trailer sway is speed-dependent.</li>
+      <li><strong>The tow vehicle's curb weight must exceed the weight of the loaded trailer.</strong> This catches more people than any hitch specification. Empty U-Haul trailers alone run from 630 to 3,155 lbs, and their online quote system computes your allowance from your vehicle's curb weight, hitch rating, and the trailer's empty weight before it will take the reservation.</li>
+      <li>Load roughly 60% of the weight ahead of the axle. Back-heavy is how trailers sway, and sway at speed is the failure mode that ends badly.</li>
+    </ul>
+
+    <h3>The volume calculator</h3>
+    <p>Cubic-foot figures in the inventory counter are packed volumes — they include the dead air around awkward shapes, since a sofa does not tessellate. Add roughly 10% if you pack loosely. Boxes stack to the ceiling and furniture does not, so a load that is mostly boxes will beat its estimate and a load that is mostly furniture will not.</p>
+
+    <h3>The curb weight rule</h3>
+    <p>The picker checks your tow vehicle's <em>curb weight</em> against the fully loaded trailer, because that is U-Haul's actual requirement and it is stricter than the hitch rating on most vehicles. A 6×12 cargo trailer is 1,920 lbs empty and carries 2,480 lbs, so 4,400 lbs loaded — which your vehicle must outweigh, not merely be rated to pull. Plenty of SUVs rated for 5,000 lbs of towing weigh less than 4,400 and are therefore ineligible.</p>
+
+    <h3>Colour coding</h3>
+    <p>Each vehicle type carries a colour drawn from the MUTCD highway sign palette — guide green for box trucks, services blue for vans, recreational brown for pickups, and so on through the towables. It runs along the card edge, the ID chip, and the type filter chips, so you can see which band of the index you are in without reading a word. A scanning aid, not decoration.</p>
+
+    <h3>Saved data</h3>
+    <p>Stars, notes, your counted inventory, and the fuel settings all live in this browser's local storage. They don't sync between devices and they don't leave the machine. Filters are written to the URL, so a filtered view can be bookmarked.</p>
+  </div>
+</section>
+</main>
+
+<div class="tray" id="tray" hidden>
+  <div class="tray-list" id="trayList"></div>
+  <button class="tray-go" id="trayGo">Compare</button>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Comparison">
+    <div class="sheet-head"><h3>Side by side</h3><button id="closeCmp">Close</button></div>
+    <div class="cmpwrap"><table class="cmp" id="cmpTable"></table></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA — batch 1: U-Haul, Penske
+   cat: pickup | van | box | cargo-trailer | utility-trailer | towing
+   oneWay: 'yes' | 'no' | 'addon' | 'limited'
+   ============================================================ */
+const DATA = [
+/* ---------------- U-HAUL ---------------- */
+{
+  id:"UH-PU", vendor:"U-Haul", name:"Pickup Truck", cat:"pickup",
+  interior:"7'10\" × 5'2\" × 1'9\"", door:"Open bed, tailgate 5'2\" wide",
+  cuft:76, maxLoad:1900, gvwr:6700, empty:null, tongue:null,
+  towCap:6000, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:19, tank:26,
+  license:"Standard driver's license", minAge:18, deck:"2'8\"",
+  features:["Tailgate load","Tows trailers","Parks in a normal space"],
+  rooms:"Dorm room · single-item runs",
+  bestFor:"Hauling one bulky thing, dump runs, mulch and lumber. The only rental in the fleet that fits in a home garage and a drive-through.",
+  quality:"Late-model half-ton pickups, usually Ford F-150 or Ram 1500. High mileage but mechanically current — this is the newest metal U-Haul rents.",
+  satisfaction:"Consistently the best-reviewed U-Haul unit, mostly because it drives like a normal vehicle and there's no box to back up.",
+  oneWay:"limited",
+  rateLocal:"Flat day rate plus a per-mile charge. Mileage is the dominant cost on anything past about 30 miles. Fuel is on you.",
+  rateOneWay:"Rarely offered on pickups. When available, treat it as a truck rental priced by lane.",
+  gotchas:["Open bed — one rainstorm and everything cardboard is ruined. Bring a tarp and ratchet straps; U-Haul sells both and rents neither.","Payload is real but volume is tiny. You will make three trips."],
+  pLocal:1, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"UH-CV", vendor:"U-Haul", name:"Cargo Van", cat:"van",
+  interior:"9'6\" × 5'7\" × 4'8\"", door:"Rear barn doors + side sliding door",
+  cuft:245, maxLoad:3880, gvwr:8600, empty:null, tongue:null,
+  towCap:6000, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:18, tank:25,
+  license:"Standard driver's license", minAge:18, deck:"2'0\"",
+  features:["Enclosed & lockable","Low deck height","Side door access","Tows trailers"],
+  rooms:"Studio · dorm · office move",
+  bestFor:"Weather-proof small loads, apartment moves with elevator access, delivery runs. Lowest deck in the fleet, so no ramp is needed and nothing gets lifted to chest height.",
+  quality:"Ford Transit or Ram ProMaster class. Newer and better maintained than the box trucks; interiors get beaten but drivetrains are sound.",
+  satisfaction:"Well regarded. Drives like a tall car, fits a standard parking garage in most cases — verify clearance, they're around 8' tall.",
+  oneWay:"limited",
+  rateLocal:"Flat day rate plus per-mile. Same structure as the pickup and priced near it.",
+  rateOneWay:"Occasionally available on short lanes; usually you're steered to a 10' truck instead.",
+  gotchas:["Garage clearance is the trap — the roof is taller than it looks from the driver's seat.","No ramp. Fine given the low deck, but appliances still need a dolly."],
+  pLocal:1, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"UH-10", vendor:"U-Haul", name:"10' Truck", cat:"box",
+  interior:"9'11\" × 6'4\" × 6'2\"", door:"Roll-up rear, 5'7\" × 5'8\" opening",
+  cuft:402, maxLoad:2850, gvwr:8600, empty:null, tongue:null,
+  towCap:0, hitch:"None — not tow rated",
+  fuel:"Gasoline", mpg:12, tank:31,
+  license:"Standard driver's license", minAge:18, deck:"2'5\"",
+  features:["Roll-up door","Van chassis — drives small","Tie-down rails"],
+  rooms:"Studio · 1 BR apartment",
+  bestFor:"The one-bedroom move where you don't want to drive a truck. Built on a van chassis, so it steers and parks far better than anything above it.",
+  quality:"Older boxes on newer cutaway chassis. Cosmetically rough, mechanically fine.",
+  satisfaction:"The sweet spot for first-time renters. Complaints cluster on the missing ramp, not the truck.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate plus per-mile, fuel excluded.",
+  rateOneWay:"Fixed quote covering a set number of days and a set mileage allotment for your specific lane. Going over either charges again at a per-day and per-mile rate. The quote moves with demand — a Friday pickup out of a high-outflow city prices differently than a Tuesday.",
+  gotchas:["No ramp and no attic. This is the single biggest complaint about the 10'; a 2'5\" lift for every heavy item adds up.","Not tow rated at all. If you're moving a car, you need the 15' or larger."],
+  pLocal:2, pOneWay:2,
+  conf:"high"
+},
+{
+  id:"UH-15", vendor:"U-Haul", name:"15' Truck", cat:"box",
+  interior:"15'0\" × 7'8\" × 7'2\"", door:"Roll-up rear, 7'2\" × 6'7\" opening",
+  cuft:764, maxLoad:6385, gvwr:14500, empty:null, tongue:null,
+  towCap:7500, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:10, tank:40,
+  license:"Standard driver's license", minAge:18, deck:"2'8\"",
+  features:["Mom's Attic","EZ-Load ramp","Tows a car","Tie-down rails"],
+  rooms:"1–2 BR apartment · small house",
+  bestFor:"The default American move. First size in the lineup with both a ramp and the over-cab attic, and the smallest that can tow a car behind it.",
+  quality:"Mid-life fleet. Expect scuffed boxes, worn seats, and a cab that rattles. Preventive maintenance is real; roadside coverage is included.",
+  satisfaction:"Middling reviews, driven almost entirely by reservation reliability rather than the truck. Equipment guarantees are honored inconsistently by location.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate plus per-mile. The day rate steps up with size; the per-mile rate steps up faster.",
+  rateOneWay:"Fixed lane quote with allotted days and miles. Add days at a stated per-day rate and miles at a stated per-mile rate. Towing equipment is a separate line.",
+  gotchas:["The attic is over the cab and there's no floor guard — anything that shifts forward is landing on it. Load it with soft goods.","The ramp is a slide-out, not a folding gate. It's heavy and it will pinch a finger."],
+  pLocal:2, pOneWay:3,
+  conf:"high"
+},
+{
+  id:"UH-17", vendor:"U-Haul", name:"17' Truck", cat:"box",
+  interior:"16'9\" × 7'8\" × 7'2\"", door:"Roll-up rear, 7'2\" × 6'7\" opening",
+  cuft:865, maxLoad:6160, gvwr:14500, empty:null, tongue:null,
+  towCap:7500, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:10, tank:40,
+  license:"Standard driver's license", minAge:18, deck:"2'8\"",
+  features:["Mom's Attic","EZ-Load ramp","Tows a car"],
+  rooms:"2 BR apartment · 2 BR house",
+  bestFor:"The hedge between 15' and 20'. Same footprint feel as the 15', ~100 cu ft more, and it's frequently in stock when the 15' isn't.",
+  quality:"Same chassis and box generation as the 15' and 20'. No meaningful build difference.",
+  satisfaction:"Same as the 15'. Nobody has strong feelings about the 17' specifically.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate plus per-mile.",
+  rateOneWay:"Fixed lane quote, allotted days and miles, overage priced per day and per mile.",
+  gotchas:["Slightly lower payload than the 15' despite being longer — same GVWR spread across a heavier box. Irrelevant unless you're moving books or tile.","Availability varies wildly by market; some regions barely stock it."],
+  pLocal:2, pOneWay:3,
+  conf:"med"
+},
+{
+  id:"UH-20", vendor:"U-Haul", name:"20' Truck", cat:"box",
+  interior:"19'6\" × 7'8\" × 7'2\"", door:"Roll-up rear, 7'2\" × 6'7\" opening",
+  cuft:1016, maxLoad:5700, gvwr:14500, empty:8800, tongue:null,
+  towCap:7500, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:10, tank:40,
+  license:"Standard driver's license", minAge:18, deck:"2'8\"",
+  features:["Mom's Attic","EZ-Load ramp","Tows a car"],
+  rooms:"2–3 BR house",
+  bestFor:"Three-bedroom houses without a full garage's worth of extras. Crosses 1,000 cu ft while staying on the 14,500 lb chassis, so it still drives like the 15'.",
+  quality:"Same generation as the 15'/17'. Longer wheelbase makes it noticeably worse in tight urban alleys and older neighborhoods.",
+  satisfaction:"Reviews soften here — more renters are out of their depth on size, and backing complaints rise sharply.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate plus per-mile.",
+  rateOneWay:"Fixed lane quote, allotted days and miles, overage per day and per mile.",
+  gotchas:["Payload drops as length grows. If you're moving a workshop, weight — not volume — becomes the limit.","Tail swing on turns catches people. The back of the box tracks wide of the mirrors."],
+  pLocal:3, pOneWay:3,
+  conf:"high"
+},
+{
+  id:"UH-26", vendor:"U-Haul", name:"26' Truck", cat:"box",
+  interior:"26'2\" × 8'2\" × 8'3\"", door:"Roll-up rear, 7'9\" × 6'10\" opening",
+  cuft:1682, maxLoad:12859, gvwr:25999, empty:13140, tongue:null,
+  towCap:10000, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:10, tank:60,
+  license:"Standard license — GVWR held at 25,999 to stay under CDL", minAge:18, deck:"2'11\"",
+  features:["Mom's Attic","EZ-Load ramp","Tows a car","10,000 lb tow rating"],
+  rooms:"3–4+ BR house",
+  bestFor:"Whole-house moves, especially ones with a garage, a shop, or a piano. The extra foot of interior height is what actually distinguishes it — you can stack a second tier.",
+  quality:"Heaviest-duty chassis in the consumer lineup, medium-duty commercial platform. Air brakes are not used; it's hydraulic, so no endorsement needed.",
+  satisfaction:"Polarized. People who needed the space are satisfied; people who over-rented regret paying to move air and fuel.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate plus per-mile — the highest of both in the fleet.",
+  rateOneWay:"Fixed lane quote with allotted days and miles. This is the size where one-way availability is tightest and lane pricing swings hardest.",
+  gotchas:["Deck is nearly 3' up and the ramp gets steep. Loading a fridge solo is a bad idea.","Payload jumps to 12,859 lbs here — nearly double the 20'. The 25,999 lb chassis is why. Some model years are listed nearer 9,000 lbs, so confirm the plate on your actual truck.","At 10 MPG with a 60-gallon tank, fuel is often the largest single line item on a cross-country move — larger than the truck.","Low-clearance parking structures, drive-throughs, and many older residential streets are out. Plan the route before you plan the load."],
+  pLocal:3, pOneWay:4,
+  conf:"high"
+},
+{
+  id:"UH-CT48", vendor:"U-Haul", name:"4×8 Cargo Trailer", cat:"cargo-trailer",
+  interior:"8'1\" × 4'1\" × 4'0\"", door:"Single swing door, 3'1\" × 3'5\"",
+  cuft:142, maxLoad:1650, gvwr:2500, empty:850, tongue:150,
+  towCap:null, hitch:"1-7/8\" or 2\" ball rated 2,000 lb min · ball height under 25\"",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · tow vehicle must pass U-Haul's hitch inspection", minAge:18, deck:"1'8\"",
+  features:["Enclosed & lockable","Lowest-cost enclosed option","One-way capable"],
+  rooms:"Dorm room · studio contents",
+  bestFor:"Small enclosed hauls behind a car you already own. Cheapest way to move a dorm across the country if you're driving anyway.",
+  quality:"U-Haul builds its own trailers and they're overbuilt — surge brakes, steel frames, long service lives. Cosmetically battered, structurally sound.",
+  satisfaction:"High. Trailers draw far fewer complaints than trucks, largely because there's less to go wrong and no fuel economy to resent.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate. No mileage charge on trailers — you're burning your own fuel.",
+  rateOneWay:"Flat lane rate for a set number of days. No per-mile component, which makes trailers dramatically cheaper than trucks on long hauls if you have a tow vehicle.",
+  gotchas:["U-Haul will refuse the rental if your vehicle isn't in their tow-rating database or lacks a factory-class hitch. Verify online before you drive to the lot.","No ramp and a narrow single door. Anything wide loads at an angle or not at all.","Volume figures published for trailers frequently don't reconcile with published interior dimensions. Measure your largest item, don't trust the cubic feet."],
+  pLocal:1, pOneWay:1,
+  conf:"high"
+},
+{
+  id:"UH-CT58", vendor:"U-Haul", name:"5×8 Cargo Trailer", cat:"cargo-trailer",
+  interior:"8'0\" × 4'8\" × 5'4\"", door:"Single swing door, 4'0\" × 4'10\"",
+  cuft:208, maxLoad:1800, gvwr:2700, empty:900, tongue:180,
+  towCap:null, hitch:"1-7/8\" or 2\" ball rated 2,000 lb min · ball height under 25\"",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · hitch inspection required", minAge:18, deck:"1'8\"",
+  features:["Enclosed & lockable","Holds a queen bed","5'4\" interior height","One-way capable"],
+  rooms:"Studio · 1 BR partial",
+  bestFor:"The most-rented trailer in the country. Enough height to stand boxes on end, still light enough for a mid-size SUV.",
+  quality:"Same construction as the 4×8. No surge brakes at this size — only the larger cargo trailers get the automatic hydraulic surge brake.",
+  satisfaction:"High, with the standard caveat that you must know how to back a trailer or you will not enjoy the parking lot.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate, no mileage charge.",
+  rateOneWay:"Flat lane rate for allotted days. No per-mile component.",
+  gotchas:["Loading nose-heavy is the correct instinct and people fight it. Roughly 60% of weight forward of the axle, or it sways.","No ramp."],
+  pLocal:1, pOneWay:1,
+  conf:"high"
+},
+{
+  id:"UH-CT510", vendor:"U-Haul", name:"5×10 Cargo Trailer", cat:"cargo-trailer",
+  interior:"9'10\" × 4'9\" × 4'7\"", door:"Single swing door, 3'9\" × 4'0\"",
+  cuft:214, maxLoad:1600, gvwr:2600, empty:1000, tongue:200,
+  towCap:null, hitch:"1-7/8\" or 2\" ball rated 2,000 lb min · ball height under 25\"",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · hitch inspection required", minAge:18, deck:"1'8\"",
+  features:["Enclosed & lockable","Automatic hydraulic surge brake","Longest small trailer","One-way capable"],
+  rooms:"1 BR apartment",
+  bestFor:"A one-bedroom with no appliances, moved behind your own vehicle. Length helps with mattresses and long furniture that won't fit the 5×8.",
+  quality:"Same build family. The extra two feet makes it noticeably twitchier when empty.",
+  satisfaction:"Good, though the payload-to-length ratio disappoints people who assume longer means more weight.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate, no mileage.",
+  rateOneWay:"Flat lane rate for allotted days.",
+  gotchas:["Payload is lower than the shorter 5×8 — the trailer itself weighs more against a similar GVWR.","Availability is thinner than the 5×8. Reserve early."],
+  pLocal:1, pOneWay:1,
+  conf:"med"
+},
+{
+  id:"UH-CT612", vendor:"U-Haul", name:"6×12 Cargo Trailer", cat:"cargo-trailer",
+  interior:"11'7\" × 6'0\" × 5'5\"", door:"Wide swing doors, 5'0\" × 4'10\"",
+  cuft:396, maxLoad:2480, gvwr:4400, empty:1920, tongue:300,
+  towCap:null, hitch:"1-7/8\" or 2\" ball rated 2,000 lb min · ball height under 25\"",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · hitch inspection required", minAge:18, deck:"1'10\"",
+  features:["Enclosed & lockable","Tandem axle","Automatic hydraulic surge brake","One-way capable"],
+  rooms:"1–2 BR apartment",
+  bestFor:"The largest enclosed trailer U-Haul rents to consumers, and the only one that will swallow appliances. Needs a real truck or full-size SUV in front of it.",
+  quality:"Heavy tandem-axle unit with surge brakes. Solidly built and correspondingly heavy empty.",
+  satisfaction:"Strong when the tow vehicle is adequate and poor when it isn't. Most negative reviews are really reviews of an under-matched tow vehicle.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate, no mileage charge.",
+  rateOneWay:"Flat lane rate for allotted days, no per-mile component. On a long move with an adequate truck, this is the cheapest enclosed option in the entire market.",
+  gotchas:["1,920 lbs empty before you load anything. A half-ton with a 6,000 lb rating is closer to its limit than the owner thinks once cargo is in.","Ramp availability varies by unit and location — it is not guaranteed on the reservation.","Backing a tandem-axle 12-footer is a different skill than backing a 5×8. Practice in an empty lot."],
+  pLocal:2, pOneWay:2,
+  conf:"high"
+},
+{
+  id:"UH-UT47", vendor:"U-Haul", name:"4×7 Utility Trailer", cat:"utility-trailer",
+  interior:"7'0\" × 4'0\" × open", door:"Open deck, drop gate",
+  cuft:null, maxLoad:1770, gvwr:2200, empty:570, tongue:120,
+  towCap:null, hitch:"1-7/8\" or 2\" ball · Class I or better",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · hitch inspection required", minAge:18, deck:"1'5\"",
+  features:["Open deck","Lowest tow weight","Drop gate"],
+  rooms:"Single items · yard debris",
+  bestFor:"Riding mowers, dump runs, a motorcycle, brush. The lightest thing U-Haul will hang off a small car.",
+  quality:"Simple welded steel deck. Nearly indestructible, frequently rusty, entirely functional.",
+  satisfaction:"High for what it is. No expectations to violate.",
+  oneWay:"no",
+  rateLocal:"Flat day rate, no mileage charge. Among the cheapest rentals in the fleet.",
+  rateOneWay:"Utility trailers are in-town only. Plan on returning it to the same location.",
+  gotchas:["Open deck. Everything needs strapping and weather protection.","In-town only — do not build a cross-country plan around this."],
+  pLocal:1, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"UH-UT59R", vendor:"U-Haul", name:"5×9 Utility Trailer w/ Ramp", cat:"utility-trailer",
+  interior:"9'2\" × 4'9\" × open", door:"Open deck, fold-down ramp gate",
+  cuft:null, maxLoad:1650, gvwr:2700, empty:900, tongue:150,
+  towCap:null, hitch:"2\" ball · Class II or better",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · hitch inspection required", minAge:18, deck:"1'6\"",
+  features:["Fold-down ramp gate","Open deck","Rolls equipment on"],
+  rooms:"Mowers · ATVs · single appliances",
+  bestFor:"Anything with wheels that you'd rather roll than lift. The ramp gate is the entire point of this trailer.",
+  quality:"Steel deck with a heavy ramp gate. The gate is the part that gets abused and it shows.",
+  satisfaction:"Well liked by people moving equipment; irrelevant to people moving households.",
+  oneWay:"no",
+  rateLocal:"Flat day rate, no mileage charge.",
+  rateOneWay:"In-town only.",
+  gotchas:["The ramp gate is heavy enough to require a real lift. Two people, or a careful back.","In-town only."],
+  pLocal:1, pOneWay:null,
+  conf:"high"
+},
+{
+  id:"UH-UT612R", vendor:"U-Haul", name:"6×12 Utility Trailer w/ Ramp", cat:"utility-trailer",
+  interior:"12'0\" × 5'7\" × open", door:"Open deck, fold-down ramp gate",
+  cuft:null, maxLoad:2480, gvwr:3600, empty:1120, tongue:200,
+  towCap:null, hitch:"2\" ball · Class III/IV · tow vehicle rated 5,000 lb+",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · hitch inspection required", minAge:18, deck:"1'6\"",
+  features:["Fold-down ramp gate","Largest open deck","Highest utility payload"],
+  rooms:"Equipment · lumber · debris",
+  bestFor:"The largest open trailer in the consumer fleet. Lumber, a tractor implement, a full renovation's worth of demolition debris.",
+  quality:"Heavy-duty tandem deck. Built for abuse and it has received some.",
+  satisfaction:"Good among people with adequate tow vehicles.",
+  oneWay:"no",
+  rateLocal:"Flat day rate, no mileage charge.",
+  rateOneWay:"In-town only.",
+  gotchas:["In-town only, which rules it out for moves.","At 12' of open deck, load distribution matters as much as total weight."],
+  pLocal:2, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"UH-DOLLY", vendor:"U-Haul", name:"Tow Dolly", cat:"towing",
+  interior:"Front wheels only", door:"Drive-on ramps",
+  cuft:null, maxLoad:3450, gvwr:null, empty:750, tongue:180,
+  towCap:null, hitch:"2\" ball · Class III · tow vehicle must exceed towed car's weight",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · both vehicles inspected at pickup", minAge:18, deck:"—",
+  features:["Front wheels up, rear wheels rolling","Lighter than a full transport","Surge brakes"],
+  rooms:"One front-wheel-drive car",
+  bestFor:"Towing a front-wheel-drive car behind a moving truck. Cheaper and lighter than the auto transport, and shorter to maneuver.",
+  quality:"Purpose-built with surge brakes and integrated straps. Reliable and heavily standardized.",
+  satisfaction:"Fine when the car qualifies. Frustration is concentrated entirely at the counter, when a rear-wheel-drive or AWD owner learns their car isn't eligible.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate, typically bundled onto a truck rental.",
+  rateOneWay:"Flat lane rate added to the truck's quote. Priced well below the auto transport.",
+  gotchas:["Front-wheel drive only, unless the driveshaft is disconnected. Rear-wheel-drive and most AWD cars need the full auto transport instead.","3,450 lb limit on the towed vehicle rules out most trucks and full-size SUVs.","You cannot back up with a loaded dolly in any useful way. Plan every stop as a pull-through."],
+  pLocal:1, pOneWay:2,
+  conf:"high"
+},
+{
+  id:"UH-AT", vendor:"U-Haul", name:"Auto Transport", cat:"towing",
+  interior:"Full four-wheel platform", door:"Drive-on ramps",
+  cuft:null, maxLoad:5290, gvwr:7500, empty:2210, tongue:400,
+  towCap:null, hitch:"2\" ball · Class IV · substantial tow vehicle required",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · both vehicles inspected at pickup", minAge:18, deck:"—",
+  features:["All four wheels off the ground","Handles RWD and AWD","Surge brakes","Integrated tire straps"],
+  rooms:"One car, any drivetrain",
+  bestFor:"Moving a car that can't ride on a dolly, or one you don't want accumulating miles and road wear.",
+  quality:"Heavy tandem-axle platform, surge braked. The most substantial thing U-Haul rents to a consumer.",
+  satisfaction:"Good, with the caveat that it demands a large tow vehicle — realistically a 20' or 26' truck, not a family SUV.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate, generally bundled with a truck rental.",
+  rateOneWay:"Flat lane rate added to the truck quote. The most expensive towing accessory offered.",
+  gotchas:["2,210 lbs empty plus a 4,000 lb car is over three tons behind you. This is not an SUV accessory.","Combined length with a 26' truck exceeds 40'. Some states and many campgrounds, ferries, and toll plazas price or restrict accordingly.","Loading is a two-person job and the ramps are steep for low-clearance cars."],
+  pLocal:2, pOneWay:3,
+  conf:"high"
+},
+
+{
+  id:"UH-29", vendor:"U-Haul", name:"29' Truck (Super Mover)", cat:"box",
+  interior:"28'0\" × 8'2\" × 8'3\"", door:"Roll-up rear, 7'9\" × 6'10\" opening",
+  cuft:2057, maxLoad:11939, gvwr:25999, empty:14060, tongue:null,
+  towCap:10000, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:9, tank:60,
+  license:"Standard license — GVWR held at 25,999", minAge:18, deck:"Adjustable, 34\" down to 30\"",
+  features:["Adjustable deck height","Mom's Attic","EZ-Load ramp","Largest rental truck available","10,000 lb tow rating"],
+  rooms:"4–6 BR house",
+  bestFor:"The largest rental truck available anywhere, and the newest addition to the fleet — U-Haul had not added a truck size since reintroducing the 20' in 2011. Over 2,000 cu ft, built to move a 4–6 bedroom home in one trip.",
+  quality:"Newest design in the U-Haul lineup. The adjustable deck that drops from 34\" to 30\" is the genuine innovation — it shortens the ramp angle measurably, which is what actually hurts on a long load-in.",
+  satisfaction:"Too new for a deep review record. The deck-lowering feature is the thing owners mention. Availability is the open question; it is not stocked everywhere yet.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate plus per-mile — the top of the fleet on both.",
+  rateOneWay:"Fixed lane quote with allotted days and miles. Availability on any given lane is the binding constraint, not price.",
+  gotchas:["29 feet of box plus a tow rig approaches 45' combined. Route planning is mandatory, not advisory — bridges, turning radii, and residential streets all become real constraints.","Availability is thin. Do not build a moving date around this truck without confirming the specific location has one.","Payload is slightly lower than the 26' despite the greater length: the truck itself weighs 14,060 lbs against a fixed 25,999 lb ceiling. Volume goes up, weight capacity goes down."],
+  pLocal:4, pOneWay:4,
+  conf:"med"
+},
+{
+  id:"UH-TOY", vendor:"U-Haul", name:"Toy Hauler", cat:"towing",
+  interior:"Deck 16'1\" × 8'2\"", door:"Three retractable loading ramps, drive-over fenders",
+  cuft:null, maxLoad:6834, gvwr:null, empty:null, tongue:500,
+  towCap:null, hitch:"2-5/16\" ball · substantial tow vehicle required",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · both vehicles inspected at pickup", minAge:18, deck:"—",
+  features:["Three retractable ramps","Drive-over fenders","Hundreds of tie-down points","Widest and longest deck U-Haul rents"],
+  rooms:"Side-by-sides · racecars · large pickups & SUVs",
+  bestFor:"What the Auto Transport can't take. Nearly two feet wider and four feet longer than the Auto Transport, with about 30% more capacity — which covers most full-size pickups and SUVs, plus UTVs, trikes, and racecars.",
+  quality:"U-Haul's first new trailer design since the 2002 Ramp Trailer. Heavy-duty throughout with an unusually dense tie-down pattern.",
+  satisfaction:"Limited review history. The three-ramp arrangement and drive-over fenders address the specific complaints people had about loading wide vehicles onto the Auto Transport.",
+  oneWay:"yes",
+  rateLocal:"Flat day rate.",
+  rateOneWay:"Flat lane rate for allotted days.",
+  gotchas:["Regional availability only. Production is concentrated in a few states and distribution is targeted at racing and powersports markets — check before planning around it.","6,834 lbs of capacity means the combined rig is well past what a half-ton should pull. Match the tow vehicle honestly.","Not a substitute for the Auto Transport on a normal car. It is bigger, heavier, and harder to maneuver."],
+  pLocal:3, pOneWay:3,
+  conf:"low"
+},
+
+/* ---------------- PENSKE ---------------- */
+{
+  id:"PK-CV", vendor:"Penske", name:"Cargo Van", cat:"van",
+  interior:"10'0\" × 5'6\" × 4'6\"", door:"Rear barn doors + side sliding door",
+  cuft:404, maxLoad:3500, gvwr:9350, empty:null, tongue:null,
+  towCap:0, hitch:"Not offered on vans",
+  fuel:"Gasoline", mpg:16, tank:25,
+  license:"Standard driver's license", minAge:18, deck:"2'0\"",
+  features:["Enclosed & lockable","High-roof options","Side door access"],
+  rooms:"Studio · office move",
+  bestFor:"Small local jobs where you want a newer vehicle than the competition rents. Penske's van is typically a high-roof Transit, which means more usable volume than the number suggests.",
+  quality:"Newest fleet in the industry — Penske cycles vehicles aggressively and average fleet age is low single-digit years.",
+  satisfaction:"Consistently the highest-rated of the major companies. Cleaner equipment, fewer reservation failures.",
+  oneWay:"no",
+  rateLocal:"Daily rate with a mileage allowance or per-mile charge depending on location.",
+  rateOneWay:"Vans are local-only. One-way is a truck product.",
+  gotchas:["Penske has far fewer locations than U-Haul, and many are inside third-party partners like Home Depot with limited hours.","No towing on vans at all."],
+  pLocal:2, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"PK-12", vendor:"Penske", name:"12' Truck", cat:"box",
+  interior:"11'11\" × 6'6\" × 6'1\"", door:"Rear roll-up, 6'1\" × 5'8\"",
+  cuft:450, maxLoad:3100, gvwr:12500, empty:null, tongue:null,
+  towCap:0, hitch:"Not tow rated",
+  fuel:"Gasoline", mpg:12, tank:33,
+  license:"Standard driver's license", minAge:18, deck:"2'6\"",
+  features:["Roll-up door","Van chassis handling","Unlimited miles on one-way"],
+  rooms:"Studio · 1 BR apartment",
+  bestFor:"Studio and one-bedroom moves where you'd rather have newer equipment than the cheapest quote.",
+  quality:"Late-model cutaway chassis, well maintained, generally cleaner than equivalents elsewhere.",
+  satisfaction:"Strong. Penske's reputation rests on the truck actually being there and actually being clean.",
+  oneWay:"yes",
+  rateLocal:"Daily rate plus per-mile, comparable in structure to U-Haul local.",
+  rateOneWay:"Fixed lane quote with unlimited mileage and a generous day allotment — this is Penske's structural advantage and it grows with distance. No per-mile overage to calculate.",
+  gotchas:["Not tow rated. For a car you need the 16' or larger.","No attic. Penske trucks don't have the over-cab compartment, so usable volume is more honest but there's no bonus space."],
+  pLocal:2, pOneWay:2,
+  conf:"med"
+},
+{
+  id:"PK-16", vendor:"Penske", name:"16' Truck", cat:"box",
+  interior:"16'0\" × 7'7\" × 6'6\"", door:"Rear roll-up, 7'0\" × 6'2\"",
+  cuft:800, maxLoad:4300, gvwr:14500, empty:null, tongue:null,
+  towCap:6000, hitch:"2\" ball, factory receiver",
+  fuel:"Gasoline", mpg:10, tank:33,
+  license:"Standard driver's license", minAge:18, deck:"2'8\"",
+  features:["Full-width loading ramp","Tows a car","Roll-up door"],
+  rooms:"1–2 BR apartment · small house",
+  bestFor:"The direct competitor to U-Haul's 15'. Newer truck, unlimited one-way miles, fewer pickup locations.",
+  quality:"Late-model medium-duty. Ramps are full-width rather than slide-out, which is meaningfully easier to use.",
+  satisfaction:"High. The full-width ramp and fleet age are the two things owners mention unprompted.",
+  oneWay:"yes",
+  rateLocal:"Daily rate plus per-mile.",
+  rateOneWay:"Fixed lane quote, unlimited miles. On a 1,500-mile move the absence of a per-mile charge frequently outweighs a higher headline day rate — run both quotes to the door before choosing.",
+  gotchas:["Towing equipment is available but is a separate charge; Penske periodically promotes it as included on one-way rentals, so ask directly.","Location count is the real constraint. Verify both ends of a one-way lane before committing."],
+  pLocal:3, pOneWay:3,
+  conf:"med"
+},
+{
+  id:"PK-22", vendor:"Penske", name:"22' Truck", cat:"box",
+  interior:"21'11\" × 8'1\" × 8'1\"", door:"Rear roll-up, 7'8\" × 7'6\"",
+  cuft:1200, maxLoad:10000, gvwr:25999, empty:null, tongue:null,
+  towCap:6000, hitch:"2\" ball, factory receiver",
+  fuel:"Diesel", mpg:10, tank:50,
+  license:"Standard license — GVWR held at 25,999", minAge:18, deck:"3'0\"",
+  features:["Full-width ramp","Diesel","Tows a car","8'+ interior height"],
+  rooms:"2–3 BR house",
+  bestFor:"Three-bedroom houses. Payload is far above anything U-Haul offers at comparable volume, which matters for dense loads — books, tools, tile, appliances.",
+  quality:"Medium-duty diesel platform. Better highway manners and engine braking than the gas equivalents, and the fleet is young.",
+  satisfaction:"Very good among people who've driven a big truck before. Diesel confuses first-timers at the pump.",
+  oneWay:"yes",
+  rateLocal:"Daily rate plus per-mile.",
+  rateOneWay:"Fixed lane quote with unlimited mileage.",
+  gotchas:["Diesel. Fuel it at the correct pump, and expect truck stops rather than corner stations on some routes.","10,000 lb payload is the standout number in the consumer market — but nothing about a household move gets close to it. Don't pay for capacity you can't fill."],
+  pLocal:3, pOneWay:4,
+  conf:"med"
+},
+{
+  id:"PK-26", vendor:"Penske", name:"26' Truck", cat:"box",
+  interior:"25'11\" × 8'1\" × 8'1\"", door:"Rear roll-up, 7'8\" × 7'6\"",
+  cuft:1700, maxLoad:10000, gvwr:25999, empty:null, tongue:null,
+  towCap:6000, hitch:"2\" ball, factory receiver",
+  fuel:"Diesel", mpg:9, tank:50,
+  license:"Standard license — GVWR held at 25,999", minAge:18, deck:"3'0\"",
+  features:["Full-width ramp","Diesel","Tows a car","Largest consumer box available"],
+  rooms:"3–5 BR house",
+  bestFor:"Full-house moves with a garage and a shop. The largest vehicle either major company will rent without a CDL.",
+  quality:"Same platform as the 22', stretched. Young fleet, diesel, engine brake on many units.",
+  satisfaction:"Good, and better than U-Haul's 26' on equipment condition. Complaints are about the size, not the truck.",
+  oneWay:"yes",
+  rateLocal:"Daily rate plus per-mile.",
+  rateOneWay:"Fixed lane quote with unlimited mileage. Against U-Haul's metered one-way, this is where the two structures diverge most sharply.",
+  gotchas:["40'+ combined with a car behind it. Route planning is not optional — check low bridges, weight-restricted roads, and your destination's street width.","Some states require a stop at open weigh stations for vehicles over 10,000 lbs GVWR. Enforcement against rental moving trucks is uneven but the rule exists.","Diesel at 9 MPG. Fuel will likely exceed the rental itself on a long move."],
+  pLocal:4, pOneWay:4,
+  conf:"med"
+},
+
+/* ---------------- BUDGET ---------------- */
+{
+  id:"BG-CV", vendor:"Budget", name:"Cargo Van", cat:"van",
+  interior:"10'0\" × 5'6\" × 4'6\"", door:"Rear barn doors + side sliding door",
+  cuft:404, maxLoad:3300, gvwr:9350, empty:null, tongue:null,
+  towCap:0, hitch:"Not offered on vans",
+  fuel:"Gasoline", mpg:16, tank:25,
+  license:"Standard driver's license", minAge:18, deck:"2'0\"",
+  features:["Enclosed & lockable","Side door access","Aggressive discount codes"],
+  rooms:"Studio · office move",
+  bestFor:"Small local hauls at the lowest sticker in the category. Budget's whole proposition is price, and the van is where the price gap is widest against Penske.",
+  quality:"Older fleet than Penske or Enterprise. Functional rather than pristine — you are trading condition for cost, deliberately.",
+  satisfaction:"Mixed. Reviews split hard between people who got a fine truck cheap and people who got a tired one. Reservation reliability is the recurring complaint.",
+  oneWay:"limited",
+  rateLocal:"Daily rate plus per-mile. Stackable discounts — AAA, military, AARP, and general web codes — are the point; they are not obscure and they compound.",
+  rateOneWay:"Vans are usually local. One-way is a truck product here.",
+  gotchas:["Never book Budget at the headline rate. The discount structure is the most aggressive in the category and codes surface in a basic search.","Fleet age shows. Inspect before you sign and photograph everything."],
+  pLocal:1, pOneWay:null,
+  conf:"low"
+},
+{
+  id:"BG-12", vendor:"Budget", name:"12' Truck", cat:"box",
+  interior:"12'0\" × 6'0\" × 6'0\"", door:"Rear roll-up",
+  cuft:450, maxLoad:3610, gvwr:12500, empty:null, tongue:null,
+  towCap:0, hitch:"Not tow rated",
+  fuel:"Gasoline", mpg:12, tank:33,
+  license:"Standard driver's license", minAge:18, deck:"2'6\"",
+  features:["Roll-up door","Van chassis handling","Lowest sticker in class"],
+  rooms:"Studio · 1 BR apartment",
+  bestFor:"The cheapest way to move a one-bedroom with a real box truck, if you're willing to hunt a discount code and accept older equipment.",
+  quality:"Older than the Penske equivalent. Mechanically maintained, cosmetically tired.",
+  satisfaction:"Middling. The truck is rarely the problem; the pickup location and the reservation are.",
+  oneWay:"yes",
+  rateLocal:"Daily rate plus per-mile.",
+  rateOneWay:"Fixed lane quote with allotted days and miles. Budget prices below the other two on equivalent lanes before discounts, and further below after.",
+  gotchas:["Not tow rated. Sizing up to the 16' is the only way to bring a car.","No Alaska or Hawaii service."],
+  pLocal:2, pOneWay:2,
+  conf:"low"
+},
+{
+  id:"BG-16", vendor:"Budget", name:"16' Truck", cat:"box",
+  interior:"16'0\" × 7'0\" × 6'6\"", door:"Rear roll-up",
+  cuft:800, maxLoad:4000, gvwr:14500, empty:null, tongue:null,
+  towCap:3500, hitch:"2\" ball, towing equipment rented separately",
+  fuel:"Gasoline", mpg:10, tank:33,
+  license:"Standard driver's license", minAge:18, deck:"2'8\"",
+  features:["Loading ramp","Towing equipment available","Discount stacking"],
+  rooms:"1–2 BR apartment · small house",
+  bestFor:"The price-led alternative to U-Haul's 15' and Penske's 16'. Same job, lowest sticker, oldest metal.",
+  quality:"Mid-to-older fleet. Expect wear.",
+  satisfaction:"Adequate. Budget's reviews improve considerably when the renter arrived expecting a bargain rather than a new truck.",
+  oneWay:"yes",
+  rateLocal:"Daily rate plus per-mile.",
+  rateOneWay:"Fixed lane quote with allotted days and miles — metered, not unlimited. On a long haul, run this against Penske's unlimited-mile structure before assuming the lower sticker wins.",
+  gotchas:["Metered miles on one-way. The headline savings can evaporate on a 2,000-mile lane once the per-mile allotment is exceeded.","Towing gear is a separate rental and availability varies by location."],
+  pLocal:2, pOneWay:2,
+  conf:"low"
+},
+{
+  id:"BG-26", vendor:"Budget", name:"26' Truck", cat:"box",
+  interior:"26'0\" × 8'1\" × 8'1\"", door:"Rear roll-up",
+  cuft:1700, maxLoad:9790, gvwr:25999, empty:null, tongue:null,
+  towCap:3500, hitch:"2\" ball, towing equipment rented separately",
+  fuel:"Diesel or gasoline by unit", mpg:9, tank:50,
+  license:"Standard license — GVWR held at 25,999", minAge:18, deck:"3'0\"",
+  features:["Loading ramp","Towing equipment available","Largest Budget box"],
+  rooms:"3–4 BR house",
+  bestFor:"Whole-house moves on the lowest sticker. Note the gap: Budget jumps 16' to 26' with nothing between.",
+  quality:"Oldest of the big three at this size. Pre-trip inspection is not a formality here.",
+  satisfaction:"The weakest of Budget's lineup by review volume, largely because big-truck failures are more disruptive than small-truck ones.",
+  oneWay:"yes",
+  rateLocal:"Daily rate plus per-mile.",
+  rateOneWay:"Fixed lane quote with allotted days and metered miles.",
+  gotchas:["There is no 22' in the Budget lineup. If your load lands between the 16' and the 26', you pay to move air.","Fuel type varies by unit. Confirm at pickup — putting gasoline in a diesel ends the move."],
+  pLocal:3, pOneWay:3,
+  conf:"med"
+},
+
+/* ---------------- ENTERPRISE ---------------- */
+{
+  id:"EN-CV", vendor:"Enterprise", name:"Cargo Van", cat:"van",
+  interior:"10'0\" × 5'6\" × 4'6\"", door:"Rear barn doors + side sliding door",
+  cuft:300, maxLoad:3000, gvwr:9000, empty:null, tongue:null,
+  towCap:0, hitch:"Not offered on vans",
+  fuel:"Gasoline", mpg:16, tank:25,
+  license:"Standard license · no CDL", minAge:21, deck:"2'0\"",
+  features:["Enclosed & lockable","Newest fleet","Hourly to monthly terms"],
+  rooms:"Studio · office move",
+  bestFor:"Local jobs where equipment condition matters more than price. Enterprise rents by the hour through the month, which no one else does well.",
+  quality:"Among the newest fleets in the market. Clean cargo areas are mentioned unprompted in reviews.",
+  satisfaction:"Strong — reliable, smooth, reasonably priced for round trips. The recurring complaint is that the nearest branch doesn't stock the size you wanted.",
+  oneWay:"no",
+  rateLocal:"Daily rate with mileage. On smaller vehicles some locations waive mileage charges under a set distance.",
+  rateOneWay:"Not available. Return to the originating branch.",
+  gotchas:["No one-way. This single fact disqualifies Enterprise from most relocations regardless of how good the trucks are.","Minimum age 21, with a different fee structure for drivers 21–24 than for 25 and up.","Same-metro branch returns are sometimes arranged by phone. Ask the agent; it isn't offered online."],
+  pLocal:2, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"EN-PU", vendor:"Enterprise", name:"3/4 & 1-Ton Pickup", cat:"pickup",
+  interior:"8'0\" × 5'4\" × 1'9\"", door:"Open bed, tailgate",
+  cuft:80, maxLoad:3500, gvwr:10000, empty:null, tongue:null,
+  towCap:9000, hitch:"2\" or 2-5/16\" ball — towing permitted per manufacturer spec",
+  fuel:"Gasoline or diesel", mpg:15, tank:34,
+  license:"Standard license · no CDL", minAge:21, deck:"2'10\"",
+  features:["Highest tow rating available to rent","Heavy-duty chassis","Gooseneck on some units"],
+  rooms:"Single items · equipment towing",
+  bestFor:"Towing something heavy with a rented truck. This is the strongest tow vehicle any major consumer company will hand you, and it's the reason to look at Enterprise at all.",
+  quality:"Late-model heavy-duty pickups, well maintained. Genuinely nice trucks.",
+  satisfaction:"High among contractors and equipment haulers, who are the real customer base for this unit.",
+  oneWay:"no",
+  rateLocal:"Daily, weekly, or monthly rate with mileage terms varying by location.",
+  rateOneWay:"Not available.",
+  gotchas:["Towing is permitted on 3/4-ton and 1-ton pickups only, and only within manufacturer specification. Box trucks may not tow at all.","You supply or rent the trailer separately — Enterprise doesn't rent towables.","Open bed. Weather and theft are your problem."],
+  pLocal:3, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"EN-16", vendor:"Enterprise", name:"16' Box Truck", cat:"box",
+  interior:"16'0\" × 7'6\" × 7'0\"", door:"Rear roll-up · liftgate on some units",
+  cuft:800, maxLoad:6000, gvwr:14500, empty:null, tongue:null,
+  towCap:0, hitch:"Towing not permitted on box trucks",
+  fuel:"Gasoline", mpg:10, tank:33,
+  license:"Standard license · no CDL", minAge:21, deck:"2'8\"",
+  features:["Liftgate available","Newest fleet in class","Hourly to monthly terms"],
+  rooms:"1–2 BR apartment",
+  bestFor:"Local moves and repeated short hauls where a liftgate saves your back. The liftgate is the differentiator — nobody else offers one on a consumer rental.",
+  quality:"Newer than U-Haul or Budget equivalents. Clean, current, well serviced.",
+  satisfaction:"Well rated. Trucks feel newer than the competition's, which reviewers notice.",
+  oneWay:"no",
+  rateLocal:"Daily rate plus mileage, with hourly and weekly terms available.",
+  rateOneWay:"Not available with limited exceptions.",
+  gotchas:["No towing behind any Enterprise box truck. If a car is coming, this whole vendor is out.","Reserve larger box trucks by phone; the website doesn't handle them consistently.","The quoted price online is an estimate, not a fixed quote, and a deposit is collected at pickup that isn't shown during booking."],
+  pLocal:3, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"EN-20", vendor:"Enterprise", name:"20' Box Truck", cat:"box",
+  interior:"20'0\" × 8'0\" × 8'0\"", door:"Rear roll-up · liftgate on some units",
+  cuft:1200, maxLoad:8000, gvwr:19500, empty:null, tongue:null,
+  towCap:0, hitch:"Towing not permitted on box trucks",
+  fuel:"Diesel", mpg:10, tank:50,
+  license:"Standard license · no CDL", minAge:21, deck:"3'0\"",
+  features:["Liftgate available","Diesel","Newer fleet"],
+  rooms:"2–3 BR house",
+  bestFor:"Mid-size local moves with heavy or awkward items, where a liftgate beats a ramp.",
+  quality:"Late-model medium-duty. The best-maintained truck in this size class among the consumer-facing companies.",
+  satisfaction:"Good. Complaints concentrate on availability, not condition.",
+  oneWay:"no",
+  rateLocal:"Daily rate plus mileage; weekly and monthly terms available.",
+  rateOneWay:"Not available with limited exceptions.",
+  gotchas:["Enterprise's own product pages for the 20' and 24' box trucks both list box dimensions of 26' × 102\" × 102\" — a copy-paste error on their site. Measure at the branch; don't trust the published figure.","Enterprise states outright that actual cubic feet and payload vary by year, make, model, and location. Treat every number in this record as a starting point.","No towing, no one-way."],
+  pLocal:3, pOneWay:null,
+  conf:"low"
+},
+{
+  id:"EN-26", vendor:"Enterprise", name:"26' Box Truck", cat:"box",
+  interior:"26'0\" × 8'6\" × 8'6\"", door:"Rear roll-up · liftgate on some units",
+  cuft:1800, maxLoad:10000, gvwr:25999, empty:null, tongue:null,
+  towCap:0, hitch:"Towing not permitted on box trucks",
+  fuel:"Diesel", mpg:9, tank:50,
+  license:"Standard license — GVWR held at 25,999 · no CDL", minAge:21, deck:"3'0\"",
+  features:["Liftgate available","Largest cargo volume in the index","Seats three","Diesel"],
+  rooms:"5+ BR house",
+  bestFor:"Large local moves and commercial work. Highest published volume of anything here, with a liftgate option nobody else offers at this size.",
+  quality:"Newest 26-footer available to a consumer. Air conditioning, automatic, and a genuinely modern cab.",
+  satisfaction:"Good, constrained by the round-trip requirement more than anything about the vehicle.",
+  oneWay:"no",
+  rateLocal:"Daily rate plus mileage; weekly and monthly available.",
+  rateOneWay:"Not available with limited exceptions. This is a round-trip truck.",
+  gotchas:["Round trip only. A 26' truck you must drive back is a poor instrument for a relocation, however nice it is.","Cannot tow a car. Combined with no one-way, Enterprise is structurally a local-work vendor, not a moving vendor.","Published capacity varies by location — confirm with the branch before planning the load."],
+  pLocal:4, pOneWay:null,
+  conf:"med"
+},
+
+/* ---------------- HOME DEPOT ---------------- */
+{
+  id:"HD-PU", vendor:"Home Depot", name:"Load 'N Go 8' Pickup", cat:"pickup",
+  interior:"8'0\" × 5'4\" × 1'9\"", door:"Open bed, tailgate",
+  cuft:80, maxLoad:3000, gvwr:10000, empty:null, tongue:null,
+  towCap:9000, hitch:"Hitch available only when you also rent towing equipment from Home Depot",
+  fuel:"Gasoline", mpg:15, tank:34,
+  license:"Standard driver's license", minAge:21, deck:"2'10\"",
+  features:["Unlimited miles","75-minute base window","F-250 class chassis"],
+  rooms:"Lumber · appliances · single items",
+  bestFor:"The trip home from the store. You bought drywall, plywood, or a water heater and need it home in the next hour. Nothing else in this index prices that trip well.",
+  quality:"Fleet-maintained heavy-duty pickups, generally late model and heavily used. Beds are scratched; drivetrains are fine.",
+  satisfaction:"Location-dependent and volatile — individual stores rate anywhere from the low 2s to near 4. Complaints are almost entirely about overage billing and limited rental-desk hours, not the trucks.",
+  oneWay:"no",
+  rateLocal:"A flat charge for the first 75 minutes, then a flat charge per additional 15 minutes. Mileage is unlimited. Daily and weekly rates exist but price poorly against a real truck company. Refundable deposit at pickup; refuel before return.",
+  rateOneWay:"Not offered. Same-store return only.",
+  gotchas:["The 75-minute clock is the whole product. Past it, the per-15-minute meter makes this the most expensive option per hour in the index. Know your round trip before you take the keys.","No reservations — first come, first served. Do not build a schedule around a truck being there.","Rental desk hours are shorter than store hours, sometimes 9 to 5. Check before driving over.","Some stores host Penske trucks on site. Those are a separate company with separate terms; don't confuse the two counters."],
+  pLocal:1, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"HD-CV", vendor:"Home Depot", name:"Load 'N Go Cargo Van", cat:"van",
+  interior:"10'0\" × 5'6\" × 4'6\"", door:"Rear barn doors + side sliding door",
+  cuft:300, maxLoad:3000, gvwr:9000, empty:null, tongue:null,
+  towCap:0, hitch:"Not offered",
+  fuel:"Gasoline", mpg:16, tank:25,
+  license:"Standard driver's license", minAge:21, deck:"2'0\"",
+  features:["Unlimited miles","75-minute base window","Enclosed & lockable"],
+  rooms:"Studio partial · materials runs",
+  bestFor:"Short enclosed hauls when it's raining. Same 75-minute economics as the pickup, with weather protection and a lockable box.",
+  quality:"Same fleet discipline as the pickups. Serviceable, well used.",
+  satisfaction:"Same profile as the pickup — the vehicle is fine, the counter experience varies by store.",
+  oneWay:"no",
+  rateLocal:"Flat charge for the first 75 minutes, then a flat charge per additional 15 minutes. Unlimited mileage. Refundable deposit at pickup.",
+  rateOneWay:"Not offered.",
+  gotchas:["Unlimited miles in 75 minutes is a smaller number than it sounds. The mileage is free; the clock is not.","First come, first served. No reservations."],
+  pLocal:1, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"HD-12", vendor:"Home Depot", name:"Load 'N Go 12' Box Truck", cat:"box",
+  interior:"12'0\" × 6'6\" × 6'0\"", door:"Rear roll-up",
+  cuft:450, maxLoad:3850, gvwr:12500, empty:null, tongue:null,
+  towCap:0, hitch:"Not tow rated",
+  fuel:"Gasoline", mpg:12, tank:33,
+  license:"Standard driver's license", minAge:21, deck:"2'6\"",
+  features:["Unlimited miles","75-minute base window","Largest Home Depot vehicle"],
+  rooms:"Studio · 1 BR apartment",
+  bestFor:"A one-bedroom move across town in under two hours, or a big materials run. The ceiling of what Home Depot rents.",
+  quality:"Small box trucks on light commercial chassis, retail-fleet maintained.",
+  satisfaction:"Fine for the intended job. Frustration comes from people trying to use it as a moving truck and running the meter.",
+  oneWay:"no",
+  rateLocal:"Flat charge for the first 75 minutes at a higher tier than the van or pickup, then a flat charge per additional 15 minutes. Unlimited mileage. Refundable deposit.",
+  rateOneWay:"Not offered. Same-store return only.",
+  gotchas:["Sizes stop here. For anything above a one-bedroom, Home Depot has no answer of its own — you're going to Penske or U-Haul.","On a full-day rental, Budget or U-Haul typically price better. The Load 'N Go advantage only exists inside the short window."],
+  pLocal:1, pOneWay:null,
+  conf:"med"
+},
+
+/* ---------------- EQUIPMENT YARDS ---------------- */
+{
+  id:"EQ-UT", vendor:"Equipment yards", name:"Utility Trailer (6'–12')", cat:"utility-trailer",
+  interior:"6' to 12' bed × ~5' wide × open", door:"Open deck, tailgate loading ramp",
+  cuft:null, maxLoad:5000, gvwr:7000, empty:1500, tongue:350,
+  towCap:null, hitch:"Varies by branch — 2\" ball, 2-5/16\" ball, or pintle. Verify when ordering.",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · tow vehicle adequacy is your responsibility", minAge:21, deck:"1'8\"",
+  features:["Tailgate loading ramp","Single or tandem axle","Construction-grade build","Walk-up available"],
+  rooms:"Debris · materials · small machines",
+  bestFor:"Renovation debris, landscaping material, hauling a small machine. Heavier duty than anything U-Haul rents, and available when U-Haul's utility trailers are all out.",
+  quality:"Construction-grade, built for daily abuse by contractors. Substantially stouter than consumer-fleet trailers, and correspondingly heavier empty.",
+  satisfaction:"Good among people who know what they're doing. These branches assume competence and won't inspect your hitch for you.",
+  oneWay:"no",
+  rateLocal:"Daily, weekly, and four-week rate tiers. The weekly rate is typically far less than five daily rates, so a three-day job often prices better as a week.",
+  rateOneWay:"Not offered. Branch return.",
+  gotchas:["Hitch ball size varies between branches and can be a 2\", a 2-5/16\", or a pintle. Confirm when you order or you'll arrive with the wrong ball.","Unlike U-Haul, these yards do not verify your tow vehicle's capacity. The liability sits entirely with you.","Rates are quoted commercially. Ask directly whether tax, environmental fees, and damage waiver are inside or outside the quoted number."],
+  pLocal:2, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"EQ-DUMP", vendor:"Equipment yards", name:"Hydraulic Dump Trailer (2–4 yd)", cat:"equipment-trailer",
+  interior:"2-yard single axle or 4-yard tandem axle", door:"Two-way tailgate, hydraulic lift bed",
+  cuft:null, maxLoad:7000, gvwr:10000, empty:2800, tongue:500,
+  towCap:null, hitch:"Varies by branch — 2\" ball, 2-5/16\" ball, or pintle. Verify when ordering.",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · tow vehicle adequacy is your responsibility", minAge:21, deck:"2'2\"",
+  features:["Hydraulic dumping","Hydraulic surge brakes","Two-way tailgate","Sized for SUV or light truck"],
+  rooms:"Mulch · gravel · demolition debris",
+  bestFor:"Anything you'd otherwise shovel out by hand. Mulch, gravel, soil, tear-out debris. The hydraulic bed is worth the premium the first time you use it.",
+  quality:"Heavy commercial units with hydraulic surge brakes. Explicitly designed to hitch to SUVs and light-duty trucks rather than requiring a dually.",
+  satisfaction:"Very high among landscapers and renovators. This is a specialist tool that does its one job extremely well.",
+  oneWay:"no",
+  rateLocal:"Daily, weekly, and four-week tiers. Weekly usually beats three or four separate days.",
+  rateOneWay:"Not offered.",
+  gotchas:["Empty weight is substantial before a single yard of material goes in. Four yards of wet soil will exceed a half-ton truck's rating quickly — check the material's weight per yard, not just the volume.","Hitch type varies by branch; verify at order.","Dumping on a slope or soft ground is how these tip. Level, firm ground only."],
+  pLocal:3, pOneWay:null,
+  conf:"med"
+},
+{
+  id:"EQ-EQTR", vendor:"Equipment yards", name:"Lift-Bed Equipment Trailer (8'–16')", cat:"equipment-trailer",
+  interior:"8'–12' bed for loads under 10,000 lb · 12'–16' for heavier", door:"Tilting or lift bed, drive-on",
+  cuft:null, maxLoad:10000, gvwr:14000, empty:3200, tongue:800,
+  towCap:null, hitch:"Typically 2-5/16\" ball or pintle · Class IV/V required · verify with branch",
+  fuel:"—", mpg:null, tank:null,
+  license:"Standard license · verify state requirements above 10,000 lb combined", minAge:21, deck:"2'0\"",
+  features:["Lift or tilt bed","Drive-on loading","Tandem axle with brakes","Handles skid steers and tractors"],
+  rooms:"Machinery · tractors · skid steers",
+  bestFor:"Moving a machine. Lift beds let you load with a hand truck or forklift instead of fighting ramps, and the heavier tier handles what no consumer trailer will.",
+  quality:"Industrial construction, rated for daily commercial loading. The most capable towable in this index by a wide margin.",
+  satisfaction:"Good, but this is professional equipment and the rental experience assumes you already know how to use it.",
+  oneWay:"no",
+  rateLocal:"Daily, weekly, and four-week tiers.",
+  rateOneWay:"Not offered.",
+  gotchas:["Loaded combined weight crosses into territory where some states impose additional licensing, registration, or weigh-station requirements. Check your state before assuming a standard license covers it.","A 3/4-ton or 1-ton pickup is realistically the minimum tow vehicle. Enterprise's heavy pickups are the pairing that makes this record usable.","Securing the load is entirely on you, and DOT chain and binder standards apply to machinery even on a personal trip."],
+  pLocal:4, pOneWay:null,
+  conf:"low"
+}
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const LS_FAV="haulindex.fav", LS_NOTE="haulindex.note";
+let favs = JSON.parse(localStorage.getItem(LS_FAV) || "[]");
+let notes = JSON.parse(localStorage.getItem(LS_NOTE) || "{}");
+let compare = [];
+let openRows = new Set();
+let state = { q:"", vendor:new Set(), cat:new Set(), price:new Set(), trip:new Set(), sort:"cuft-desc", favOnly:false };
+
+const CATS = {
+  "box":"Box truck","van":"Cargo van","pickup":"Pickup",
+  "cargo-trailer":"Cargo trailer","utility-trailer":"Utility trailer",
+  "equipment-trailer":"Equipment trailer","towing":"Car towing"
+};
+const CATVAR = {
+  "box":"box","van":"van","pickup":"pickup","cargo-trailer":"cargo",
+  "utility-trailer":"utility","equipment-trailer":"equip","towing":"towing"
+};
+const catStyle = c => `--cat:var(--c-${CATVAR[c]});--cat-t:var(--c-${CATVAR[c]}-t)`;
+const TRIPS = { "yes":"One-way OK", "no":"Local only", "limited":"One-way limited" };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const n = v => v==null ? "—" : v.toLocaleString();
+function tier(v){
+  if(!v) return `<span class="pr"><i>n/a</i></span>`;
+  return `<span class="pr"><b>${"$".repeat(v)}</b><s>${"$".repeat(4-v)}</s></span>`;
+}
+const MAXCUFT = Math.max(...DATA.map(d=>d.cuft||0));
+
+/* ============================================================
+   FILTERS
+   ============================================================ */
+function buildChips(){
+  const vendors = [...new Set(DATA.map(d=>d.vendor))].sort();
+  $("#fVendor").innerHTML = vendors.map(v=>
+    `<button class="chip" data-f="vendor" data-v="${esc(v)}" aria-pressed="false">${esc(v)}</button>`).join("");
+  const cats = [...new Set(DATA.map(d=>d.cat))];
+  $("#fCat").innerHTML = cats.map(c=>
+    `<button class="chip" data-f="cat" data-v="${esc(c)}" style="${catStyle(c)}" aria-pressed="false">${esc(CATS[c]||c)}</button>`).join("");
+  $("#fPrice").innerHTML = [1,2,3,4].map(v=>
+    `<button class="chip" data-f="price" data-v="${v}" aria-pressed="false">${"$".repeat(v)}</button>`).join("");
+  $("#fTrip").innerHTML = Object.entries(TRIPS).map(([k,v])=>
+    `<button class="chip" data-f="trip" data-v="${esc(k)}" aria-pressed="false">${esc(v)}</button>`).join("");
+
+  document.querySelectorAll(".chip").forEach(b=>{
+    b.addEventListener("click",()=>{
+      const f=b.dataset.f, v=b.dataset.v;
+      state[f].has(v) ? state[f].delete(v) : state[f].add(v);
+      b.setAttribute("aria-pressed", state[f].has(v));
+      render(); writeURL();
+    });
+  });
+}
+
+function match(d){
+  if(state.favOnly && !favs.includes(d.id)) return false;
+  if(state.vendor.size && !state.vendor.has(d.vendor)) return false;
+  if(state.cat.size && !state.cat.has(d.cat)) return false;
+  if(state.price.size){
+    const tiers = [d.pLocal, d.pOneWay].filter(Boolean).map(String);
+    if(!tiers.some(t=>state.price.has(t))) return false;
+  }
+  if(state.trip.size){
+    const t = d.oneWay==="addon" ? "limited" : d.oneWay;
+    if(!state.trip.has(t)) return false;
+  }
+  if(state.q){
+    const hay = [d.vendor,d.name,d.bestFor,d.rooms,d.quality,d.satisfaction,
+                 (d.features||[]).join(" "),(d.gotchas||[]).join(" "),d.interior,d.license,notes[d.id]||""]
+                 .join(" ").toLowerCase();
+    if(!state.q.toLowerCase().split(/\s+/).every(w=>hay.includes(w))) return false;
+  }
+  return true;
+}
+
+function sorted(rows){
+  const [key,dir] = state.sort.split("-");
+  return rows.slice().sort((a,b)=>{
+    let x=a[key], y=b[key];
+    if(typeof x === "string" || typeof y === "string"){
+      x=(x||"").toString(); y=(y||"").toString();
+      return dir==="asc" ? x.localeCompare(y) : y.localeCompare(x);
+    }
+    if(x==null) return 1; if(y==null) return -1;
+    return dir==="asc" ? x-y : y-x;
+  });
+}
+
+/* ============================================================
+   RENDER — cards
+   ============================================================ */
+function plate(d){
+  const cells = d.cat.includes("trailer") || d.cat==="towing"
+    ? [["GVWR",n(d.gvwr),"lb"],["Max load",n(d.maxLoad),"lb"],["Empty",n(d.empty),"lb"],["Tongue",n(d.tongue),"lb"]]
+    : [["GVWR",n(d.gvwr),"lb"],["Max load",n(d.maxLoad),"lb"],["Volume",n(d.cuft),"cu ft"],["Tow",d.towCap?n(d.towCap):"—",d.towCap?"lb":""]];
+  return `<div class="plate"><div class="plate-cap">Capacity — ${esc(d.vendor)} ${esc(d.id)}</div>
+    <div class="plate-grid">${cells.map(c=>
+      `<div class="plate-cell"><span class="plate-k">${c[0]}</span><span class="plate-v">${c[1]}</span><span class="plate-u">${c[2]}</span></div>`
+    ).join("")}</div></div>`;
+}
+
+function detail(d){
+  return `
+  <div class="rec-body">
+    <div class="sec"><h4>Best for</h4><p class="prose">${esc(d.bestFor)}</p>
+      <div class="taglist">${(d.features||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join("")}</div></div>
+
+    <div class="sec"><h4>Dimensions &amp; access</h4>
+      <dl class="dl">
+        <dt>Interior</dt><dd>${esc(d.interior)}</dd>
+        <dt>Door opening</dt><dd>${esc(d.door)}</dd>
+        <dt>Deck height</dt><dd>${esc(d.deck)}</dd>
+        <dt>Volume</dt><dd>${d.cuft?n(d.cuft)+" cu ft":"—"}</dd>
+      </dl></div>
+
+    <div class="sec"><h4>Towing &amp; hitch</h4>
+      <dl class="dl">
+        <dt>Tow capacity</dt><dd>${d.towCap?n(d.towCap)+" lb":(d.towCap===0?"Not rated":"—")}</dd>
+        <dt>Hitch</dt><dd style="text-align:left">${esc(d.hitch)}</dd>
+        <dt>Tongue weight</dt><dd>${d.tongue?n(d.tongue)+" lb":"—"}</dd>
+      </dl></div>
+
+    ${d.mpg?`<div class="sec"><h4>Fuel</h4>
+      <dl class="dl">
+        <dt>Type</dt><dd>${esc(d.fuel)}</dd>
+        <dt>Economy</dt><dd>~${d.mpg} mpg</dd>
+        <dt>Tank</dt><dd>${d.tank} gal</dd>
+        <dt>Range</dt><dd>~${n(d.mpg*d.tank)} mi</dd>
+      </dl>
+      ${fuelCost(d)?`<div class="fuelout">Fuel for ${n(fuelCfg.miles)} mi at $${fuelCfg.gal}/gal: <b>${usd(fuelCost(d))}</b> — about ${Math.ceil(fuelCfg.miles/(d.mpg*d.tank))} fill-ups.</div>`
+        :`<div class="hint" style="margin-top:6px">Set trip distance and fuel price in the Pick a vehicle tab to see a cost estimate here.</div>`}
+      </div>`:""}
+
+    <div class="sec"><h4>Requirements</h4>
+      <dl class="dl">
+        <dt>License</dt><dd style="text-align:left">${esc(d.license)}</dd>
+        <dt>Minimum age</dt><dd>${d.minAge}</dd>
+      </dl></div>
+
+    <div class="sec"><h4>How you're charged</h4>
+      <div class="rate">
+        <div><em>Local / round trip &nbsp;${tier(d.pLocal)}</em>${esc(d.rateLocal)}</div>
+        <div><em>One-way &nbsp;${tier(d.pOneWay)}</em>${esc(d.rateOneWay)}</div>
+      </div></div>
+
+    <div class="sec"><h4>Equipment quality</h4><p class="prose">${esc(d.quality)}</p></div>
+    <div class="sec"><h4>Customer experience</h4><p class="prose">${esc(d.satisfaction)}</p></div>
+
+    <div class="sec"><h4>Watch out</h4>
+      <div class="warn"><ul>${(d.gotchas||[]).map(g=>`<li>${esc(g)}</li>`).join("")}</ul></div></div>
+
+    <div class="sec"><h4>Your notes</h4>
+      <textarea class="noteinput" data-note="${esc(d.id)}" placeholder="Quotes, locations, what went wrong last time…">${esc(notes[d.id]||"")}</textarea></div>
+  </div>
+  <div class="rec-actions">
+    <button class="act" data-fav="${esc(d.id)}" aria-pressed="${favs.includes(d.id)}">${favs.includes(d.id)?"★ Saved":"☆ Save"}</button>
+    <button class="act" data-cmp="${esc(d.id)}" aria-pressed="${compare.includes(d.id)}">${compare.includes(d.id)?"✓ In compare":"+ Compare"}</button>
+  </div>`;
+}
+
+function renderCards(rows){
+  $("#cards").innerHTML = rows.map(d=>{
+    const open = openRows.has(d.id);
+    const pct = d.cuft ? Math.round(d.cuft/MAXCUFT*100) : 0;
+    return `<article class="rec ${favs.includes(d.id)?"fav":""}" style="${catStyle(d.cat)}">
+      <div class="rec-head" role="button" tabindex="0" data-toggle="${esc(d.id)}" aria-expanded="${open}">
+        <span class="rec-id mono">${esc(d.id)}</span>
+        <div class="rec-title">
+          <div class="rec-vendor">${esc(d.vendor)} · ${esc(CATS[d.cat]||d.cat)}</div>
+          <div class="rec-name">${esc(d.name)}</div>
+          <div class="rec-sub">${esc(d.rooms)} <span class="conf ${d.conf}">${d.conf}</span></div>
+        </div>
+        <span class="rec-chev">${open?"▲":"▼"}</span>
+      </div>
+      <div class="sizebar"><i style="width:${pct}%"></i></div>
+      ${plate(d)}
+      <div class="rec-quick">
+        <div class="qk"><span>Volume</span><b>${d.cuft?n(d.cuft)+" ft³":"open"}</b></div>
+        <div class="qk"><span>Payload</span><b>${n(d.maxLoad)} lb</b></div>
+        <div class="qk"><span>Fuel</span><b>${d.mpg?d.mpg+" mpg":"—"}</b></div>
+        <div class="qk"><span>One-way</span><b>${esc(TRIPS[d.oneWay==="addon"?"limited":d.oneWay]||d.oneWay)}</b></div>
+        <div class="qk"><span>Cost · local</span><b>${tier(d.pLocal)}</b></div>
+        <div class="qk"><span>Cost · one-way</span><b>${tier(d.pOneWay)}</b></div>
+      </div>
+      ${open?detail(d):""}
+    </article>`;
+  }).join("") || `<div class="empty">Nothing matches. Loosen a filter or clear the search.</div>`;
+}
+
+/* ============================================================
+   RENDER — table
+   ============================================================ */
+const COLS = [
+  {k:"id",l:"ID",cls:"mono"},{k:"vendor",l:"Company",cls:"vd"},{k:"name",l:"Vehicle",cls:"nm"},
+  {k:"cat",l:"Type",f:d=>CATS[d.cat]||d.cat},
+  {k:"cuft",l:"Cu ft",cls:"num"},{k:"maxLoad",l:"Payload lb",cls:"num"},{k:"gvwr",l:"GVWR lb",cls:"num"},
+  {k:"empty",l:"Empty lb",cls:"num"},{k:"tongue",l:"Tongue lb",cls:"num"},
+  {k:"towCap",l:"Tows lb",cls:"num"},{k:"mpg",l:"MPG",cls:"num"},{k:"tank",l:"Tank gal",cls:"num"},
+  {k:"interior",l:"Interior L×W×H"},{k:"deck",l:"Deck ht"},
+  {k:"pLocal",l:"$ local",cls:"num"},{k:"pOneWay",l:"$ 1-way",cls:"num"},
+  {k:"oneWay",l:"One-way",f:d=>TRIPS[d.oneWay==="addon"?"limited":d.oneWay]||d.oneWay},
+  {k:"rooms",l:"Suits"},{k:"conf",l:"Conf.",f:d=>`<span class="conf ${d.conf}">${d.conf}</span>`}
+];
+
+function renderTable(rows){
+  const [sk,sd] = state.sort.split("-");
+  $("#grid").querySelector("thead").innerHTML = "<tr>"+COLS.map(c=>
+    `<th data-sort="${c.k}" ${sk===c.k?`aria-sort="${sd==="asc"?"ascending":"descending"}"`:""}>${c.l}</th>`
+  ).join("")+"</tr>";
+
+  $("#grid").querySelector("tbody").innerHTML = rows.map(d=>{
+    const open = openRows.has(d.id);
+    const main = `<tr class="${open?"open":""}" data-row="${esc(d.id)}" style="${catStyle(d.cat)}">`+COLS.map(c=>{
+      let v = c.f ? c.f(d) : d[c.k];
+      if(v==null||v==="") v="—";
+      if(typeof v==="number") v=v.toLocaleString();
+      return `<td class="${c.cls||""}" ${c.k==="name"?`data-toggle="${esc(d.id)}"`:""}>${c.k==="conf"?v:esc(v)}</td>`;
+    }).join("")+"</tr>";
+    const det = open ? `<tr class="detailrow" style="${catStyle(d.cat)}"><td colspan="${COLS.length}"><div class="detailgrid">${detail(d)}</div></td></tr>` : "";
+    return main+det;
+  }).join("") || `<tr><td colspan="${COLS.length}"><div class="empty">Nothing matches. Loosen a filter or clear the search.</div></td></tr>`;
+
+  $("#grid").querySelectorAll("th[data-sort]").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const k=th.dataset.sort;
+      state.sort = (sk===k && sd==="desc") ? k+"-asc" : k+"-desc";
+      $("#sortby").value = state.sort;
+      render(); writeURL();
+    });
+  });
+}
+
+/* ============================================================
+   MAIN RENDER
+   ============================================================ */
+function render(){
+  const rows = sorted(DATA.filter(match));
+  const label = `${rows.length} of ${DATA.length} records`;
+  $("#count").textContent = label;
+  $("#resultbar").textContent = label;
+  const active = state.vendor.size + state.cat.size + state.price.size + state.trip.size
+               + (state.q?1:0) + (state.favOnly?1:0);
+  const badge = $("#fBadge");
+  badge.textContent = active; badge.hidden = active===0;
+  renderCards(rows);
+  renderTable(rows);
+  renderTray();
+  bindRows();
+}
+
+function bindRows(){
+  document.querySelectorAll("[data-toggle]").forEach(el=>{
+    const go = e => { e.stopPropagation(); const id=el.dataset.toggle;
+      openRows.has(id) ? openRows.delete(id) : openRows.add(id); render(); };
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(e);} });
+  });
+  document.querySelectorAll("[data-fav]").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation(); const id=b.dataset.fav;
+    favs.includes(id) ? favs=favs.filter(x=>x!==id) : favs.push(id);
+    localStorage.setItem(LS_FAV, JSON.stringify(favs)); render();
+  }));
+  document.querySelectorAll("[data-cmp]").forEach(b=>b.addEventListener("click",e=>{
+    e.stopPropagation(); const id=b.dataset.cmp;
+    if(compare.includes(id)) compare=compare.filter(x=>x!==id);
+    else { if(compare.length>=4) compare.shift(); compare.push(id); }
+    render();
+  }));
+  document.querySelectorAll("[data-note]").forEach(t=>{
+    t.addEventListener("input",()=>{ notes[t.dataset.note]=t.value;
+      localStorage.setItem(LS_NOTE, JSON.stringify(notes)); });
+    t.addEventListener("click",e=>e.stopPropagation());
+  });
+}
+
+/* ============================================================
+   COMPARE
+   ============================================================ */
+function renderTray(){
+  const tray=$("#tray");
+  if(!compare.length){ tray.hidden=true; return; }
+  tray.hidden=false;
+  $("#trayList").innerHTML = compare.map(id=>{
+    const d=DATA.find(x=>x.id===id);
+    return `<span class="tray-item">${esc(d.name)}<button data-untray="${esc(id)}" aria-label="Remove ${esc(d.name)}">×</button></span>`;
+  }).join("");
+  $("#trayList").querySelectorAll("[data-untray]").forEach(b=>b.addEventListener("click",()=>{
+    compare=compare.filter(x=>x!==b.dataset.untray); render();
+  }));
+}
+
+const CMP_ROWS = [
+  ["Company",d=>d.vendor],["Type",d=>CATS[d.cat]],["Volume",d=>d.cuft?n(d.cuft)+" ft³":"—",true],
+  ["Payload",d=>n(d.maxLoad)+" lb",true],["GVWR",d=>n(d.gvwr)+" lb"],["Empty wt",d=>d.empty?n(d.empty)+" lb":"—"],
+  ["Tongue wt",d=>d.tongue?n(d.tongue)+" lb":"—"],["Interior",d=>d.interior],["Door",d=>d.door],
+  ["Deck height",d=>d.deck],["Tows",d=>d.towCap?n(d.towCap)+" lb":(d.towCap===0?"No":"—")],
+  ["Hitch",d=>d.hitch],["Fuel",d=>d.fuel],["MPG",d=>d.mpg?d.mpg:"—",true],["Tank",d=>d.tank?d.tank+" gal":"—"],
+  ["Range",d=>d.mpg?n(d.mpg*d.tank)+" mi":"—"],["Min age",d=>d.minAge],["License",d=>d.license],
+  ["Suits",d=>d.rooms],["One-way",d=>TRIPS[d.oneWay==="addon"?"limited":d.oneWay]],
+  ["Cost tier · local",d=>d.pLocal?"$".repeat(d.pLocal):"n/a"],
+  ["Cost tier · one-way",d=>d.pOneWay?"$".repeat(d.pOneWay):"n/a"],
+  ["Local charges",d=>d.rateLocal],["One-way charges",d=>d.rateOneWay],["Confidence",d=>d.conf]
+];
+
+function showCompare(){
+  const items = compare.map(id=>DATA.find(d=>d.id===id));
+  let html = "<thead><tr><th></th>"+items.map(d=>`<th>${esc(d.vendor)}<br>${esc(d.name)}</th>`).join("")+"</tr></thead><tbody>";
+  CMP_ROWS.forEach(([label,fn,isBest])=>{
+    let bestIdx=-1;
+    if(isBest){
+      let best=-Infinity;
+      items.forEach((d,i)=>{
+        const raw = label==="Volume"?d.cuft : label==="Payload"?d.maxLoad : d.mpg;
+        if(raw!=null && raw>best){ best=raw; bestIdx=i; }
+      });
+    }
+    html += `<tr><th>${label}</th>`+items.map((d,i)=>
+      `<td class="${i===bestIdx?"best":""}">${esc(fn(d))}</td>`).join("")+"</tr>";
+  });
+  $("#cmpTable").innerHTML = html+"</tbody>";
+  $("#overlay").hidden=false;
+}
+
+/* ============================================================
+   PICKER
+   ============================================================ */
+const ROOM_PRESETS = [["Any",0],["Studio",350],["1 BR",500],["2 BR",800],["3 BR",1150],["4 BR+",1600]];
+
+/* Packed-volume estimates in cubic feet, including the dead air around awkward shapes. */
+const INVENTORY = [
+ ["Bedroom",[["King mattress & box",40],["Queen mattress & box",30],["Full mattress & box",25],
+   ["Twin mattress & box",18],["Bed frame / headboard",10],["Dresser",25],["Chest of drawers",18],
+   ["Nightstand",5],["Armoire / wardrobe",35],["Mirror",4]]],
+ ["Living room",[["Sectional sofa",60],["Sofa, 3-seat",35],["Loveseat",25],["Armchair / recliner",18],
+   ["Coffee table",10],["End table",5],["TV, 55\" or larger",8],["TV stand / console",12],
+   ["Bookcase",20],["Floor lamp",4],["Area rug, rolled",6]]],
+ ["Appliances",[["Refrigerator",30],["Washer",15],["Dryer",15],["Range / stove",20],
+   ["Dishwasher",12],["Freezer, chest",22],["Microwave",3],["Air conditioner, window",6]]],
+ ["Dining & kitchen",[["Dining table",20],["Dining chair",5],["China cabinet / hutch",30],
+   ["Buffet / sideboard",22],["Bar stool",4],["Kitchen cart",8]]],
+ ["Office",[["Desk",25],["Office chair",10],["File cabinet, 2-drawer",6],["File cabinet, 4-drawer",10],
+   ["Printer",4],["Safe, small",4]]],
+ ["Boxes",[["Small box (1.5 cu ft)",1.5],["Medium box (3 cu ft)",3],["Large box (4.5 cu ft)",4.5],
+   ["Wardrobe box",12],["Dish barrel",5],["Tote / bin",3]]],
+ ["Garage & outdoor",[["Bicycle",8],["Lawn mower, push",20],["Lawn mower, riding",70],
+   ["Tool chest",15],["Workbench",25],["Grill",15],["Ladder, extension",6],
+   ["Shelving unit",15],["Patio set",30],["Snow blower",25]]]
+];
+
+let pk = { cuft:0, curb:null, towRate:null, trip:"any", miles:null, gal:null };
+let inv = JSON.parse(localStorage.getItem("haulindex.inv") || "{}");
+let fuelCfg = JSON.parse(localStorage.getItem("haulindex.fuel") || "{}");
+
+function invTotal(){
+  let t=0;
+  INVENTORY.forEach(([grp,items])=>items.forEach(([name,cf])=>{
+    t += (inv[grp+"|"+name]||0) * cf;
+  }));
+  return Math.round(t);
+}
+
+function buildInventory(){
+  $("#invGroups").innerHTML = INVENTORY.map(([grp,items])=>
+    `<div class="invgrp"><h5>${esc(grp)}</h5>${items.map(([name,cf])=>{
+      const key = grp+"|"+name, q = inv[key]||0;
+      return `<div class="invrow ${q?"on":""}" data-key="${esc(key)}">
+        <span class="invname">${esc(name)}<em>${cf} cu ft each</em></span>
+        <span class="stepper">
+          <button data-step="-1" data-k="${esc(key)}" aria-label="Fewer ${esc(name)}">−</button>
+          <span class="qty">${q}</span>
+          <button data-step="1" data-k="${esc(key)}" aria-label="More ${esc(name)}">+</button>
+        </span></div>`;
+    }).join("")}</div>`).join("");
+
+  $("#invGroups").querySelectorAll("[data-step]").forEach(b=>b.addEventListener("click",()=>{
+    const k=b.dataset.k, delta=+b.dataset.step;
+    inv[k]=Math.max(0,(inv[k]||0)+delta);
+    if(!inv[k]) delete inv[k];
+    localStorage.setItem("haulindex.inv", JSON.stringify(inv));
+    buildInventory(); syncInvTotals();
+  }));
+  syncInvTotals();
+}
+
+function syncInvTotals(){
+  const t = invTotal();
+  $("#invTotal").textContent = t.toLocaleString()+" cu ft";
+  $("#invSum").textContent = t ? `— ${t.toLocaleString()} cu ft counted` : "";
+}
+
+function buildPicker(){
+  $("#pkRooms").innerHTML = ROOM_PRESETS.map(([l,v],i)=>
+    `<button class="seg" data-room="${v}" aria-pressed="${i===0}">${l}</button>`).join("");
+  $("#pkTrip").innerHTML = [["any","Either"],["yes","One-way"],["no","Local"]].map(([v,l],i)=>
+    `<button class="seg" data-trip="${v}" aria-pressed="${i===0}">${l}</button>`).join("");
+
+  $("#pkRooms").querySelectorAll("[data-room]").forEach(b=>b.addEventListener("click",()=>{
+    $("#pkRooms").querySelectorAll("[data-room]").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    pk.cuft = +b.dataset.room; $("#pkCuft").value = pk.cuft; updateCuftOut(); renderPicker();
+  }));
+  $("#pkTrip").querySelectorAll("[data-trip]").forEach(b=>b.addEventListener("click",()=>{
+    $("#pkTrip").querySelectorAll("[data-trip]").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true"); pk.trip=b.dataset.trip; renderPicker();
+  }));
+  $("#pkCuft").addEventListener("input",e=>{
+    pk.cuft=+e.target.value; updateCuftOut();
+    $("#pkRooms").querySelectorAll("[data-room]").forEach(x=>x.setAttribute("aria-pressed","false"));
+    renderPicker();
+  });
+  $("#pkCurb").addEventListener("input",e=>{ pk.curb = e.target.value?+e.target.value:null; renderPicker(); });
+  $("#pkTowRate").addEventListener("input",e=>{ pk.towRate = e.target.value?+e.target.value:null; renderPicker(); });
+
+  if(fuelCfg.miles){ pk.miles=fuelCfg.miles; $("#pkMiles").value=fuelCfg.miles; }
+  if(fuelCfg.gal){ pk.gal=fuelCfg.gal; $("#pkGal").value=fuelCfg.gal; }
+  const saveFuel = () => {
+    fuelCfg = {miles:pk.miles, gal:pk.gal};
+    localStorage.setItem("haulindex.fuel", JSON.stringify(fuelCfg));
+    renderPicker(); render();
+  };
+  $("#pkMiles").addEventListener("input",e=>{ pk.miles=e.target.value?+e.target.value:null; saveFuel(); });
+  $("#pkGal").addEventListener("input",e=>{ pk.gal=e.target.value?+e.target.value:null; saveFuel(); });
+
+  $("#invToggle").addEventListener("click",()=>{
+    const btn=$("#invToggle"), open=btn.getAttribute("aria-expanded")==="true";
+    btn.setAttribute("aria-expanded",!open); $("#invPanel").hidden=open;
+  });
+  $("#invApply").addEventListener("click",()=>{
+    const t=invTotal(); if(!t) return;
+    pk.cuft=t; $("#pkCuft").value=Math.min(t,1800); updateCuftOut();
+    $("#pkRooms").querySelectorAll("[data-room]").forEach(x=>x.setAttribute("aria-pressed","false"));
+    renderPicker();
+    $("#pkCuftOut").scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  $("#invClear").addEventListener("click",()=>{
+    inv={}; localStorage.setItem("haulindex.inv","{}"); buildInventory();
+  });
+
+  buildInventory();
+  renderPicker();
+}
+function updateCuftOut(){
+  $("#pkCuftOut").textContent = pk.cuft ? pk.cuft.toLocaleString()+" cu ft" : "Any";
+}
+
+function fuelCost(d){
+  if(!d.mpg || !fuelCfg.miles || !fuelCfg.gal) return null;
+  return (fuelCfg.miles / d.mpg) * fuelCfg.gal;
+}
+const usd = v => "$"+Math.round(v).toLocaleString();
+
+function renderPicker(){
+  let rows = DATA.filter(d=>{
+    if(pk.cuft && (!d.cuft || d.cuft < pk.cuft)) return false;
+    if(pk.trip==="yes" && d.oneWay!=="yes") return false;
+    if(pk.trip==="no" && d.oneWay==="no" && false) return false;
+    const isTowed = d.cat.includes("trailer") || d.cat==="towing";
+    if(isTowed){
+      const loaded = (d.empty||0) + (d.maxLoad||0);
+      if(pk.curb!=null && loaded > pk.curb) return false;
+      if(pk.towRate!=null && loaded > pk.towRate) return false;
+    }
+    return true;
+  });
+
+  rows.sort((a,b)=>{
+    const sa = a.cuft ? a.cuft - pk.cuft : 99999;
+    const sb = b.cuft ? b.cuft - pk.cuft : 99999;
+    return sa - sb;
+  });
+  rows = rows.slice(0,8);
+
+  $("#pkResults").innerHTML = rows.map((d,i)=>{
+    const slack = d.cuft && pk.cuft ? d.cuft - pk.cuft : null;
+    const pct = slack!=null && pk.cuft ? Math.round(slack/pk.cuft*100) : null;
+    let fit="", cls="";
+    if(pct!=null){
+      if(pct < 12){ fit=`Tight fit — ${n(slack)} ft³ spare (${pct}%)`; cls="tight"; }
+      else fit = `${n(slack)} ft³ spare (${pct}% over target)`;
+    } else fit = "No volume target set";
+    const fc = fuelCost(d);
+    return `<div class="pkres ${i===0?"top":""}" style="${catStyle(d.cat)}">
+      <span class="pkrank mono">${i+1}</span>
+      <div class="pkbody">
+        <div class="rec-vendor">${esc(d.vendor)} · ${esc(CATS[d.cat]||d.cat)}</div>
+        <div class="rec-name">${esc(d.name)}</div>
+        <div class="pkwhy">${esc(d.bestFor)}</div>
+        <div class="pkfit ${cls}">${esc(fit)}</div>
+        <div style="margin-top:4px;font-size:11px;color:var(--ink2)">Local ${tier(d.pLocal)} &nbsp;·&nbsp; One-way ${tier(d.pOneWay)}</div>
+        ${fc?`<div class="fuelout">Fuel for ${n(fuelCfg.miles)} mi at ~${d.mpg} mpg: <b>${usd(fc)}</b></div>`:""}
+      </div></div>`;
+  }).join("") || `<div class="empty">Nothing in the index meets all constraints. Most often it&#39;s the curb-weight rule — a loaded trailer is its empty weight plus its full payload, and that total has to come in under your vehicle&#39;s curb weight.</div>`;
+}
+
+/* ============================================================
+   URL STATE
+   ============================================================ */
+function writeURL(){
+  const p = new URLSearchParams();
+  if(state.q) p.set("q",state.q);
+  if(state.vendor.size) p.set("v",[...state.vendor].join("|"));
+  if(state.cat.size) p.set("c",[...state.cat].join("|"));
+  if(state.price.size) p.set("p",[...state.price].join("|"));
+  if(state.trip.size) p.set("t",[...state.trip].join("|"));
+  if(state.sort!=="cuft-desc") p.set("s",state.sort);
+  history.replaceState(null,"", p.toString() ? "#"+p.toString() : location.pathname);
+}
+function readURL(){
+  const p = new URLSearchParams(location.hash.slice(1));
+  if(p.get("q")){ state.q=p.get("q"); $("#q").value=state.q; }
+  ["v|vendor","c|cat","p|price","t|trip"].forEach(pair=>{
+    const [k,f]=pair.split("|");
+    if(p.get(k)) p.get(k).split("|").forEach(v=>state[f].add(v));
+  });
+  if(p.get("s")){ state.sort=p.get("s"); $("#sortby").value=state.sort; }
+  document.querySelectorAll(".chip").forEach(b=>{
+    b.setAttribute("aria-pressed", state[b.dataset.f].has(b.dataset.v));
+  });
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+document.querySelectorAll('[role="tab"]').forEach(t=>{
+  t.addEventListener("click",()=>{
+    document.querySelectorAll('[role="tab"]').forEach(x=>{
+      x.setAttribute("aria-selected", x===t);
+      $("#"+x.getAttribute("aria-controls")).hidden = (x!==t);
+    });
+    window.scrollTo(0,0);
+  });
+});
+$("#q").addEventListener("input",e=>{ state.q=e.target.value; render(); writeURL(); });
+$("#sortby").addEventListener("change",e=>{ state.sort=e.target.value; render(); writeURL(); });
+$("#favOnly").addEventListener("click",()=>{
+  state.favOnly=!state.favOnly;
+  $("#favOnly").setAttribute("aria-pressed",state.favOnly); render();
+});
+$("#reset").addEventListener("click",()=>{
+  state={q:"",vendor:new Set(),cat:new Set(),price:new Set(),trip:new Set(),sort:"cuft-desc",favOnly:false};
+  $("#q").value=""; $("#sortby").value="cuft-desc";
+  $("#favOnly").setAttribute("aria-pressed","false");
+  document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed","false"));
+  openRows.clear(); render(); writeURL();
+});
+$("#filterToggle").addEventListener("click",()=>{
+  const btn=$("#filterToggle"), open=btn.getAttribute("aria-expanded")==="true";
+  btn.setAttribute("aria-expanded", !open);
+  $("#panelFilters").hidden = open;
+});
+if(window.matchMedia("(min-width:720px)").matches){
+  $("#panelFilters").hidden=false; $("#filterToggle").setAttribute("aria-expanded","true");
+}
+$("#trayGo").addEventListener("click",showCompare);
+$("#closeCmp").addEventListener("click",()=>$("#overlay").hidden=true);
+$("#overlay").addEventListener("click",e=>{ if(e.target===$("#overlay")) $("#overlay").hidden=true; });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("#overlay").hidden=true; });
+
+buildChips();
+readURL();
+buildPicker();
+render();
+</script>
+</body>
+</html>
